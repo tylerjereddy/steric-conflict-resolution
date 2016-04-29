@@ -11,7 +11,7 @@ install:
   - docker build -t tylerreddy/steric-conflict-resolution docker_build/
 
 script:
-  - :
+  - docker run tylerreddy/steric-conflict-resolution
 
 after_success:
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
