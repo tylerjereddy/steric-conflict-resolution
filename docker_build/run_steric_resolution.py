@@ -11,7 +11,7 @@ parser.add_argument("-cutoff", type=float, help="cutoff (A)")
 parser.add_argument('-list_particles_per_residue', nargs='+', required=True, type=int) #should be half as long as index_list
 args = parser.parse_args()
 
-def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, index_list = args.index_list, residue_names_list = args.residue_names_list, cutoff = args.cutoff), list_particles_per_residue = args.list_particles_per_residue:
+def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, index_list = args.index_list, residue_names_list = args.residue_names_list, cutoff = args.cutoff, list_particles_per_residue = args.list_particles_per_residue):
     print 'input_coord_file:', input_coord_file
     print 'index_list:', index_list
     print 'residue_names_list:', residue_names_list
