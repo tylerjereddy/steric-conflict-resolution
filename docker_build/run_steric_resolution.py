@@ -13,7 +13,7 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
     print 'input_coord_file:', input_coord_file
     print 'index_list:', index_list
     print 'residue_names_list:', residue_names_list
-    if not len(residue_names_list) = int(len(index_list) / 2.):
+    if not len(residue_names_list) == int(len(index_list) / 2.):
         sys.exit('The residue_names_list should be half as long as the index_list as the latter contains start & end indices for each residue.')
     
 if __name__ == '__main__':
