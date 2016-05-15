@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+import subprocess
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-input_coord_file_path", type=str)
@@ -21,6 +22,14 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
     if not len(list_particles_per_residue) == int(len(index_list) / 2.):
         sys.exit('The list_particles_per_residue should be half as long as the index_list as the latter contains start & end indices for each residue.')
     print 'list_particles_per_residue:', list_particles_per_residue
+
+    current_residue_species_index = 0
+    for residue_name, particles_current_residue in zip(residue_names_list, list_particles_per_residue):
+        start_index = index_list[current_residue_species_index]
+        end_index = index_list[current_residue_species_index + 1]
+        
+        subprocess.call("python /steric_analysis/run_assessment.py -start_index {start_index} -end_index {end_index} -coord_filepath {input_coord_file} -particles_per_residue {particles_current_residue} -cutoff {cutoff} -pickle_filename /analysis_in_container/steric_viols.p -plot_filename /analysis_in_container/steric_histogram.png".format(start_index=start_index, end_index=end_index, input_coord_file=input_coord_file, particles_current_residue=particles_current_residue, cutoff=cutoff)
+        #subprocess.call("python /steric_analysis/run_assessment.py -start_index 1 -end_index 24 -coord_filepath /analysis_in_container/coordinates.pdb -particles_per_residue 12 -cutoff 2.0 -pickle_filename /analysis_in_container/steric_viols.p -plot_filename /analysis_in_container/steric_histogram.png")
     
 if __name__ == '__main__':
     run_steric_resolution_loop()
