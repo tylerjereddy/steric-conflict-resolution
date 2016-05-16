@@ -45,7 +45,7 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
         
     percentage_residues_with_steric_conflicts_previous_round = 100
     consecutive_rounds_without_improvement = 0
-    while consecutive_rounds_without_improvement < 2:
+    while 1:
         print 'starting steric assessment round {round_number}'.format(round_number = round_number)
         start_time = time.time()
         cumulative_array_per_residue_steric_conflicts = steric_assessment_all_species(round_number)
@@ -58,6 +58,21 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
         steric_assessment_minutes = steric_assessment_seconds / 60.
         steric_assessment_hours = steric_assessment_minutes / 60.
         print 'completed steric assessment round {round_number} in ', steric_assessment_seconds, ' seconds or ', steric_assessment_minutes, ' minutes or ', steric_assessment_hours, ' hours'
+
+        #store the current percentage as the previous now that the comparison has been done
+        percentage_residues_with_steric_conflicts_previous_round = percentage_residues_with_steric_conflicts
+
+        #if all steric conflicts have been resolved, exit the while loop
+        if percentage_residues_with_steric_conflicts == 0:
+            print 'All steric conflicts for the input residues have been resolved -- exiting loop.'
+            break
+
+        #likewise, exit the while loop if two consecutive rounds have failed to improve the steric situation
+        if consecutive_rounds_without_improvement == 2:
+            print 'Exiting loop because two consecutive steric conflict resolution rounds have failed to improve the situation.'
+            break
+
+        #if there may still be something to gain with another round of alchembed, run it based on user-specified parameters
 
 
 
