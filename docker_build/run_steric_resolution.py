@@ -6,6 +6,7 @@ import sys
 import subprocess
 import cPickle as pickle
 import numpy as np
+import generate_mdp
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-input_coord_file_path", type=str)
@@ -14,9 +15,14 @@ parser.add_argument('-residue_names_list', nargs='+', required=True, type=str) #
 parser.add_argument("-cutoff", type=float, help="cutoff (A)")
 parser.add_argument('-list_particles_per_residue', nargs='+', required=True, type=int) #should be half as long as index_list
 parser.add_argument("-output_path", type=str) #absolute path for data output (i.e., for writing pickle / plot files)
+parser.add_argument("-alchembed_b_value", type=int, default = 2)  # b = 2 appears to be optimal based on the Alchembed paper, so that is the default
+parser.add_argument("-alchembed_resolution", type=str, default = 'CG')  # the simulation 'resolution' (AT vs. CG -- currently only have CG .mdp implemented)
+parser.add_argument("-alchembed_steps", type=int, default = 1000)  # code will use this as a starting point, but if it doesn't succeed it will increase the number of steps
+parser.add_argument("-alchembed_alpha", type=float, default = 0.1)  
+parser.add_argument("-alchembed_dt", type=float, default = 0.01)  
 args = parser.parse_args()
 
-def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, index_list = args.index_list, residue_names_list = args.residue_names_list, cutoff = args.cutoff, list_particles_per_residue = args.list_particles_per_residue, output_path = args.output_path):
+def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, index_list = args.index_list, residue_names_list = args.residue_names_list, cutoff = args.cutoff, list_particles_per_residue = args.list_particles_per_residue, output_path = args.output_path, alchembed_b_value = args.alchembed_b_value, alchembed_resolution = args.alchembed_resolution, alchembed_steps = args.alchembed_steps, alchembed_alpha = args.alchembed_alpha, alchembed_dt = args.alchembed_dt):
     if not len(residue_names_list) == int(len(index_list) / 2.):
         sys.exit('The residue_names_list should be half as long as the index_list as the latter contains start & end indices for each residue.')
     if not len(list_particles_per_residue) == int(len(index_list) / 2.):
@@ -53,6 +59,8 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
         percentage_residues_with_steric_conflicts = (float(num_residues_with_steric_conflicts) / float(cumulative_array_per_residue_steric_conflicts.shape[0])) * 100.
         if percentage_residues_with_steric_conflicts >= percentage_residues_with_steric_conflicts_previous_round:
             consecutive_rounds_without_improvement += 1
+        else:
+            consecutive_rounds_without_improvement = 0
         end_time = time.time()
         steric_assessment_seconds = end_time - start_time
         steric_assessment_minutes = steric_assessment_seconds / 60.
@@ -73,6 +81,18 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
             break
 
         #if there may still be something to gain with another round of alchembed, run it based on user-specified parameters
+        
+        #we will need to generate an .mdp file for the alchembed simulation
+        alchembed_mdp_filename = '{output_path}/alchembed_round_{round_number}.mdp'.format(output_path=output_path, round_number=round_number)
+        if consecutive_rounds_without_improvement == 0:
+            actual_alchembed_steps = alchembed_steps
+        else:
+            actual_alchembed_steps = alchembed_steps * 10 #slow it down if last attempt was problematic
+
+        alchembed_delta_lambda = 1. / float(actual_alchembed_steps)
+        generate_mdp.generate_mdp(resolution=alchembed_resolution, output_filename = alchembed_mdp_filename, b = alchembed_b_value, steps = actual_alchembed_steps, delta_lambda = alchembed_delta_lambda, alpha = alchembed_alpha, dt = alchembed_dt)
+
+        round_number += 1
 
 
 
