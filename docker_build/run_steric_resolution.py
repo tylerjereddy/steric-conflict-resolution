@@ -47,7 +47,7 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
                 cumulative_array_per_residue_steric_conflicts = np.concatenate((cumulative_array_per_residue_steric_conflicts, new_array_per_residue_steric_conflicts))
             current_residue_species_index += 2
         #the full steric assessment across all residue types in the current round has completed -- so write the cumulative array of per-residue steric conflict counts to a round number-tagged pickle file and return the array proper
-        pickle.dump((cumulative_array_per_residue_steric_conflicts, open('cumulative_array_per_residue_steric_conflicts_round_{round_number}.p'.format(round_number = round_number),'wb'))
+        pickle.dump((cumulative_array_per_residue_steric_conflicts, open('cumulative_array_per_residue_steric_conflicts_round_{round_number}.p'.format(round_number = round_number),'wb')))
         return cumulative_array_per_residue_steric_conflicts
         
     percentage_residues_with_steric_conflicts_previous_round = 100
