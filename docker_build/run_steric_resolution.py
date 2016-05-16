@@ -1,6 +1,7 @@
 '''This script runs the iterative procedure that follows the workflow: steric assessment - alchembed - steric assessment, etc.'''
 
 import argparse
+import time
 import sys
 import subprocess
 import cPickle as pickle
@@ -41,6 +42,24 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
         #the full steric assessment across all residue types in the current round has completed -- so write the cumulative array of per-residue steric conflict counts to a round number-tagged pickle file and return the array proper
         pickle.dump((cumulative_array_per_residue_steric_conflicts, open('cumulative_array_per_residue_steric_conflicts_round_{round_number}.p'.format(round_number = round_number),'wb'))
         return cumulative_array_per_residue_steric_conflicts
+        
+    percentage_residues_with_steric_conflicts_previous_round = 100
+    consecutive_rounds_without_improvement = 0
+    while consecutive_rounds_without_improvement < 2:
+        print 'starting steric assessment round {round_number}'.format(round_number = round_number)
+        start_time = time.time()
+        cumulative_array_per_residue_steric_conflicts = steric_assessment_all_species(round_number)
+        num_residues_with_steric_conflicts = np.count_nonzero(cumulative_array_per_residue_steric_conflicts)
+        percentage_residues_with_steric_conflicts = (float(num_residues_with_steric_conflicts) / float(cumulative_array_per_residue_steric_conflicts.shape[0])) * 100.
+        if percentage_residues_with_steric_conflicts >= percentage_residues_with_steric_conflicts_previous_round:
+            consecutive_rounds_without_improvement += 1
+        end_time = time.time()
+        steric_assessment_seconds = end_time - start_time
+        steric_assessment_minutes = steric_assessment_seconds / 60.
+        steric_assessment_hours = steric_assessment_minutes / 60.
+        print 'completed steric assessment round {round_number} in ', steric_assessment_seconds, ' seconds or ', steric_assessment_minutes, ' minutes or ', steric_assessment_hours, ' hours'
+
+
 
     
 if __name__ == '__main__':
