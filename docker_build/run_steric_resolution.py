@@ -29,7 +29,7 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
         end_index = index_list[current_residue_species_index + 1]
         
         subprocess.call("python /steric_analysis/run_assessment.py -start_index {start_index} -end_index {end_index} -coord_filepath {input_coord_file} -particles_per_residue {particles_current_residue} -cutoff {cutoff} -pickle_filename /analysis_in_container/steric_viols.p -plot_filename /analysis_in_container/steric_histogram.png".format(start_index=start_index, end_index=end_index, input_coord_file=input_coord_file, particles_current_residue=particles_current_residue, cutoff=cutoff)
-        #subprocess.call("python /steric_analysis/run_assessment.py -start_index 1 -end_index 24 -coord_filepath /analysis_in_container/coordinates.pdb -particles_per_residue 12 -cutoff 2.0 -pickle_filename /analysis_in_container/steric_viols.p -plot_filename /analysis_in_container/steric_histogram.png")
+        current_residue_species_index += 2
     
 if __name__ == '__main__':
     run_steric_resolution_loop()
