@@ -10,18 +10,14 @@ parser.add_argument('-index_list', nargs='+', required=True, type=int) #should b
 parser.add_argument('-residue_names_list', nargs='+', required=True, type=str) #should be half as long as index_list
 parser.add_argument("-cutoff", type=float, help="cutoff (A)")
 parser.add_argument('-list_particles_per_residue', nargs='+', required=True, type=int) #should be half as long as index_list
+parser.add_argument("-output_path", type=str) #absolute path for data output (i.e., for writing pickle / plot files)
 args = parser.parse_args()
 
-def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, index_list = args.index_list, residue_names_list = args.residue_names_list, cutoff = args.cutoff, list_particles_per_residue = args.list_particles_per_residue):
-    print 'input_coord_file:', input_coord_file
-    print 'index_list:', index_list
-    print 'residue_names_list:', residue_names_list
+def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, index_list = args.index_list, residue_names_list = args.residue_names_list, cutoff = args.cutoff, list_particles_per_residue = args.list_particles_per_residue, output_path = args.output_path):
     if not len(residue_names_list) == int(len(index_list) / 2.):
         sys.exit('The residue_names_list should be half as long as the index_list as the latter contains start & end indices for each residue.')
-    print 'cutoff:', cutoff
     if not len(list_particles_per_residue) == int(len(index_list) / 2.):
         sys.exit('The list_particles_per_residue should be half as long as the index_list as the latter contains start & end indices for each residue.')
-    print 'list_particles_per_residue:', list_particles_per_residue
 
     round_number = 1
 
@@ -33,7 +29,7 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
             start_index = index_list[current_residue_species_index]
             end_index = index_list[current_residue_species_index + 1]
             
-            subprocess.call("python /steric_analysis/run_assessment.py -start_index {start_index} -end_index {end_index} -coord_filepath {input_coord_file} -particles_per_residue {particles_current_residue} -cutoff {cutoff} -pickle_filename /analysis_in_container/steric_viols.p -plot_filename /analysis_in_container/steric_histogram.png".format(start_index=start_index, end_index=end_index, input_coord_file=input_coord_file, particles_current_residue=particles_current_residue, cutoff=cutoff)
+            subprocess.call("python /steric_analysis/run_assessment.py -start_index {start_index} -end_index {end_index} -coord_filepath {input_coord_file} -particles_per_residue {particles_current_residue} -cutoff {cutoff} -pickle_filename {output_path}/steric_viols.p -plot_filename {output_path}/steric_histogram.png".format(start_index=start_index, end_index=end_index, input_coord_file=input_coord_file, particles_current_residue=particles_current_residue, cutoff=cutoff, output_path=output_path))
             current_residue_species_index += 2
     
 if __name__ == '__main__':
