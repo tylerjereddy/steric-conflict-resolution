@@ -3,6 +3,8 @@
 import argparse
 import sys
 import subprocess
+import cPickle as pickle
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-input_coord_file_path", type=str)
@@ -30,7 +32,16 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
             end_index = index_list[current_residue_species_index + 1]
             
             subprocess.call("python /steric_analysis/run_assessment.py -start_index {start_index} -end_index {end_index} -coord_filepath {input_coord_file} -particles_per_residue {particles_current_residue} -cutoff {cutoff} -pickle_filename {output_path}/steric_viols.p -plot_filename {output_path}/steric_histogram.png".format(start_index=start_index, end_index=end_index, input_coord_file=input_coord_file, particles_current_residue=particles_current_residue, cutoff=cutoff, output_path=output_path))
+            if current_residue_species_index == 0: #initialize cumulative array after first residue type analyzed
+                cumulative_array_per_residue_steric_conflicts = pickle.load(open('{output_path}/steric_viols.p'.format(output_path=output_path), 'rb'))
+            else: #concatenate new residue steric array data with previous residue data
+                new_array_per_residue_steric_conflicts = pickle.load(open('{output_path}/steric_viols.p'.format(output_path=output_path), 'rb'))
+                cumulative_array_per_residue_steric_conflicts = np.concatenate((cumulative_array_per_residue_steric_conflicts, new_array_per_residue_steric_conflicts))
             current_residue_species_index += 2
+        #the full steric assessment across all residue types in the current round has completed -- so write the cumulative array of per-residue steric conflict counts to a round number-tagged pickle file and return the array proper
+        pickle.dump((cumulative_array_per_residue_steric_conflicts, open('cumulative_array_per_residue_steric_conflicts_round_{round_number}.p'.format(round_number = round_number),'wb'))
+        return cumulative_array_per_residue_steric_conflicts
+
     
 if __name__ == '__main__':
     run_steric_resolution_loop()
