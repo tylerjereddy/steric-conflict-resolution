@@ -23,13 +23,18 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
         sys.exit('The list_particles_per_residue should be half as long as the index_list as the latter contains start & end indices for each residue.')
     print 'list_particles_per_residue:', list_particles_per_residue
 
-    current_residue_species_index = 0
-    for residue_name, particles_current_residue in zip(residue_names_list, list_particles_per_residue):
-        start_index = index_list[current_residue_species_index]
-        end_index = index_list[current_residue_species_index + 1]
-        
-        subprocess.call("python /steric_analysis/run_assessment.py -start_index {start_index} -end_index {end_index} -coord_filepath {input_coord_file} -particles_per_residue {particles_current_residue} -cutoff {cutoff} -pickle_filename /analysis_in_container/steric_viols.p -plot_filename /analysis_in_container/steric_histogram.png".format(start_index=start_index, end_index=end_index, input_coord_file=input_coord_file, particles_current_residue=particles_current_residue, cutoff=cutoff)
-        current_residue_species_index += 2
+    round_number = 1
+
+    def steric_assessment_all_species(round_number):
+        '''Run the steric assessment for all specified residues / species. Should return the pickled aggregate numpy array data for steric violations across all residues.
+        round_number should be an integeter representing the current round number in the steric resolution loop'''
+        current_residue_species_index = 0
+        for residue_name, particles_current_residue in zip(residue_names_list, list_particles_per_residue):
+            start_index = index_list[current_residue_species_index]
+            end_index = index_list[current_residue_species_index + 1]
+            
+            subprocess.call("python /steric_analysis/run_assessment.py -start_index {start_index} -end_index {end_index} -coord_filepath {input_coord_file} -particles_per_residue {particles_current_residue} -cutoff {cutoff} -pickle_filename /analysis_in_container/steric_viols.p -plot_filename /analysis_in_container/steric_histogram.png".format(start_index=start_index, end_index=end_index, input_coord_file=input_coord_file, particles_current_residue=particles_current_residue, cutoff=cutoff)
+            current_residue_species_index += 2
     
 if __name__ == '__main__':
     run_steric_resolution_loop()
