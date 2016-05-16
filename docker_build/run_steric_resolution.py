@@ -20,9 +20,10 @@ parser.add_argument("-alchembed_resolution", type=str, default = 'CG')  # the si
 parser.add_argument("-alchembed_steps", type=int, default = 1000)  # code will use this as a starting point, but if it doesn't succeed it will increase the number of steps
 parser.add_argument("-alchembed_alpha", type=float, default = 0.1)  
 parser.add_argument("-alchembed_dt", type=float, default = 0.01)  
+parser.add_argument("-topology_filepath", type=str) # for GROMACS .top file
 args = parser.parse_args()
 
-def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, index_list = args.index_list, residue_names_list = args.residue_names_list, cutoff = args.cutoff, list_particles_per_residue = args.list_particles_per_residue, output_path = args.output_path, alchembed_b_value = args.alchembed_b_value, alchembed_resolution = args.alchembed_resolution, alchembed_steps = args.alchembed_steps, alchembed_alpha = args.alchembed_alpha, alchembed_dt = args.alchembed_dt):
+def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, index_list = args.index_list, residue_names_list = args.residue_names_list, cutoff = args.cutoff, list_particles_per_residue = args.list_particles_per_residue, output_path = args.output_path, alchembed_b_value = args.alchembed_b_value, alchembed_resolution = args.alchembed_resolution, alchembed_steps = args.alchembed_steps, alchembed_alpha = args.alchembed_alpha, alchembed_dt = args.alchembed_dt, topology_filepath = args.topology_filepath):
     if not len(residue_names_list) == int(len(index_list) / 2.):
         sys.exit('The residue_names_list should be half as long as the index_list as the latter contains start & end indices for each residue.')
     if not len(list_particles_per_residue) == int(len(index_list) / 2.):
@@ -92,6 +93,14 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
         alchembed_delta_lambda = 1. / float(actual_alchembed_steps)
         generate_mdp.generate_mdp(resolution=alchembed_resolution, output_filename = alchembed_mdp_filename, b = alchembed_b_value, steps = actual_alchembed_steps, delta_lambda = alchembed_delta_lambda, alpha = alchembed_alpha, dt = alchembed_dt)
 
+        #generate alchembed tpr file
+        tpr_filename = alchembed_mdp_filename.replace('mdp','tpr')
+        subprocess.call('gmx grompp -f {mdp_file} -c {input_coords_current_round} -p {top_file} -o {tpr_filename}'.format(mdp_file=alchembed_mdp_filename, input_coords_current_round=input_coord_file, top_file=topology_filepath, tpr_filename=tpr_filename))
+
+        #run the alchembed 'simulation' on a single core
+        print 'starting alchembed simulation for round ', round_number
+        subprocess.call('gmx mdrun -s {tpr_filename} -deffnm alchembed_round_{round_number} -nt 1'.format(tpr_filename=tpr_filename, round_number=round_number))
+        print 'finished alchembed simulation for round ', round_number
         round_number += 1
 
 
