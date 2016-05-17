@@ -57,7 +57,7 @@ def generate_mdp(resolution='CG', output_filename = 'alchembed.mdp', b = 2, step
 
     with open(output_filename, 'w') as output_file:
         for key, value in mdp_lines.iteritems():
-            output_file.write(key + ' = ' + value + ',\n')
+            output_file.write(key + ' = ' + value + '\n')
 
 if __name__ == '__main__':
     generate_mdp()
