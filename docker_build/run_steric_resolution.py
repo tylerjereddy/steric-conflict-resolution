@@ -66,7 +66,7 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
         steric_assessment_seconds = end_time - start_time
         steric_assessment_minutes = steric_assessment_seconds / 60.
         steric_assessment_hours = steric_assessment_minutes / 60.
-        print 'completed steric assessment round {round_number} in ', steric_assessment_seconds, ' seconds or ', steric_assessment_minutes, ' minutes or ', steric_assessment_hours, ' hours'
+        print 'completed steric assessment round {round_number} in '.format(round_number=round_number), steric_assessment_seconds, ' seconds or ', steric_assessment_minutes, ' minutes or ', steric_assessment_hours, ' hours'
 
         #store the current percentage as the previous now that the comparison has been done
         percentage_residues_with_steric_conflicts_previous_round = percentage_residues_with_steric_conflicts
