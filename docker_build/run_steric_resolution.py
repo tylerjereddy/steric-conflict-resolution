@@ -39,7 +39,7 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
             start_index = index_list[current_residue_species_index]
             end_index = index_list[current_residue_species_index + 1]
             
-            subprocess.call("python /steric_analysis/run_assessment.py -start_index {start_index} -end_index {end_index} -coord_filepath {input_coord_file} -particles_per_residue {particles_current_residue} -cutoff {cutoff} -pickle_filename {output_path}/steric_viols.p -plot_filename {output_path}/steric_histogram.png".format(start_index=start_index, end_index=end_index, input_coord_file=input_coord_file, particles_current_residue=particles_current_residue, cutoff=cutoff, output_path=output_path))
+            subprocess.call("python /steric_analysis/run_assessment.py -start_index {start_index} -end_index {end_index} -coord_filepath {input_coord_file} -particles_per_residue {particles_current_residue} -cutoff {cutoff} -pickle_filename {output_path}/steric_viols.p -plot_filename {output_path}/steric_histogram.png".format(start_index=start_index, end_index=end_index, input_coord_file=input_coord_file, particles_current_residue=particles_current_residue, cutoff=cutoff, output_path=output_path), shell=True)
             if current_residue_species_index == 0: #initialize cumulative array after first residue type analyzed
                 cumulative_array_per_residue_steric_conflicts = pickle.load(open('{output_path}/steric_viols.p'.format(output_path=output_path), 'rb'))
             else: #concatenate new residue steric array data with previous residue data
@@ -95,7 +95,7 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
 
         #generate alchembed tpr file
         tpr_filename = alchembed_mdp_filename.replace('mdp','tpr')
-        subprocess.call('gmx grompp -f {mdp_file} -c {input_coords_current_round} -p {top_file} -o {tpr_filename}'.format(mdp_file=alchembed_mdp_filename, input_coords_current_round=input_coord_file, top_file=topology_filepath, tpr_filename=tpr_filename))
+        subprocess.call('gmx grompp -f {mdp_file} -c {input_coords_current_round} -p {top_file} -o {tpr_filename}'.format(mdp_file=alchembed_mdp_filename, input_coords_current_round=input_coord_file, top_file=topology_filepath, tpr_filename=tpr_filename), shell=True)
 
         #run the alchembed 'simulation' on a single core
         print 'starting alchembed simulation for round ', round_number
