@@ -58,7 +58,7 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
         cumulative_array_per_residue_steric_conflicts = steric_assessment_all_species(round_number)
         num_residues_with_steric_conflicts = np.count_nonzero(cumulative_array_per_residue_steric_conflicts)
         percentage_residues_with_steric_conflicts = (float(num_residues_with_steric_conflicts) / float(cumulative_array_per_residue_steric_conflicts.shape[0])) * 100.
-        if percentage_residues_with_steric_conflicts >= percentage_residues_with_steric_conflicts_previous_round:
+        if percentage_residues_with_steric_conflicts >= percentage_residues_with_steric_conflicts_previous_round and not round_number==1:
             consecutive_rounds_without_improvement += 1
         else:
             consecutive_rounds_without_improvement = 0
