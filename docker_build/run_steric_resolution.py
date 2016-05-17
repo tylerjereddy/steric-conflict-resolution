@@ -95,11 +95,11 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
 
         #generate alchembed tpr file
         tpr_filename = alchembed_mdp_filename.replace('mdp','tpr')
-        subprocess.call('gmx grompp -f {mdp_file} -c {input_coords_current_round} -p {top_file} -o {tpr_filename}'.format(mdp_file=alchembed_mdp_filename, input_coords_current_round=input_coord_file, top_file=topology_filepath, tpr_filename=tpr_filename), shell=True)
+        subprocess.call('source /usr/local/gromacs/bin/GMXRC; gmx grompp -f {mdp_file} -c {input_coords_current_round} -p {top_file} -o {tpr_filename}'.format(mdp_file=alchembed_mdp_filename, input_coords_current_round=input_coord_file, top_file=topology_filepath, tpr_filename=tpr_filename), shell=True)
 
         #run the alchembed 'simulation' on a single core
         print 'starting alchembed simulation for round ', round_number
-        subprocess.call('gmx mdrun -s {tpr_filename} -deffnm alchembed_round_{round_number} -nt 1'.format(tpr_filename=tpr_filename, round_number=round_number), shell=True)
+        subprocess.call('source /usr/local/gromacs/bin/GMXRC; gmx mdrun -s {tpr_filename} -deffnm alchembed_round_{round_number} -nt 1'.format(tpr_filename=tpr_filename, round_number=round_number), shell=True)
         print 'finished alchembed simulation for round ', round_number
         round_number += 1
 
