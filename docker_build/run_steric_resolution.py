@@ -99,7 +99,7 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
 
         #run the alchembed 'simulation' on a single core
         print 'starting alchembed simulation for round ', round_number
-        subprocess.call(['/bin/bash','-i','-c','gmx mdrun -s {tpr_filename} -deffnm alchembed_round_{round_number} -nt 1'.format(tpr_filename=tpr_filename, round_number=round_number)])
+        subprocess.call(['/bin/bash','-i','-c','gmx mdrun -v -stepout 100 -s {tpr_filename} -deffnm alchembed_round_{round_number} -nt 1'.format(tpr_filename=tpr_filename, round_number=round_number)])
         print 'finished alchembed simulation for round ', round_number
         round_number += 1
 
