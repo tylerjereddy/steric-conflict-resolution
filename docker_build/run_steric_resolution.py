@@ -102,6 +102,7 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
         output_deffnm = alchembed_mdp_filename[:-4]
         subprocess.call(['/bin/bash','-i','-c','gmx mdrun -v -stepout 100 -s {tpr_filename} -deffnm {output_deffnm} -nt 1'.format(tpr_filename=tpr_filename, round_number=round_number, output_deffnm=output_deffnm)])
         print 'finished alchembed simulation for round ', round_number
+        input_coord_file = output_deffnm + '.gro' # set coord file for next round
         round_number += 1
 
 
