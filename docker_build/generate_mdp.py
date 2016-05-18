@@ -44,7 +44,7 @@ def generate_mdp(resolution='CG', output_filename = 'alchembed.mdp', b = 2, step
                         ('sc-alpha'             , '0.1000'),
                         ('sc-power'             , '1'),
                         ('sc-r-power'           , '6'),
-                        ('couple-moltype'       , 'PROTEIN'),
+                        ('couple-moltype'       , 'SYSTEM'),
                         ('couple-lambda0'       , 'none'),
                         ('couple-lambda1'       , 'vdw')])
 
