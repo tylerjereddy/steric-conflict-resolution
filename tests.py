@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-import np.testing
+import numpy.testing
 import subprocess
 import cPickle as pickle
 import glob
