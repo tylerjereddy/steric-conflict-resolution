@@ -8,8 +8,7 @@ import cPickle as pickle
 import numpy as np
 import generate_mdp
 
-
-def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list, cutoff, list_particles_per_residue, output_path, alchembed_b_value = 2, alchembed_resolution = 'CG', alchembed_steps = 1000, alchembed_alpha = 0.1, alchembed_dt = 0.01, topology_filepath):
+def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list, cutoff, list_particles_per_residue, output_path, topology_filepath, alchembed_b_value = 2, alchembed_resolution = 'CG', alchembed_steps = 1000, alchembed_alpha = 0.1, alchembed_dt = 0.01):
     if not len(residue_names_list) == int(len(index_list) / 2.):
         sys.exit('The residue_names_list should be half as long as the index_list as the latter contains start & end indices for each residue.')
     if not len(list_particles_per_residue) == int(len(index_list) / 2.):
