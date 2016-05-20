@@ -8,20 +8,6 @@ import cPickle as pickle
 import numpy as np
 import generate_mdp
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-input_coord_file_path", type=str)
-parser.add_argument('-index_list', nargs='+', required=True, type=int) #should be list of alternating start and end indices
-parser.add_argument('-residue_names_list', nargs='+', required=True, type=str) #should be half as long as index_list
-parser.add_argument("-cutoff", type=float, help="cutoff (A)")
-parser.add_argument('-list_particles_per_residue', nargs='+', required=True, type=int) #should be half as long as index_list
-parser.add_argument("-output_path", type=str) #absolute path for data output (i.e., for writing pickle / plot files)
-parser.add_argument("-alchembed_b_value", type=int, default = 2)  # b = 2 appears to be optimal based on the Alchembed paper, so that is the default
-parser.add_argument("-alchembed_resolution", type=str, default = 'CG')  # the simulation 'resolution' (AT vs. CG -- currently only have CG .mdp implemented)
-parser.add_argument("-alchembed_steps", type=int, default = 1000)  # code will use this as a starting point, but if it doesn't succeed it will increase the number of steps
-parser.add_argument("-alchembed_alpha", type=float, default = 0.1)  
-parser.add_argument("-alchembed_dt", type=float, default = 0.01)  
-parser.add_argument("-topology_filepath", type=str) # for GROMACS .top file
-args = parser.parse_args()
 
 def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, index_list = args.index_list, residue_names_list = args.residue_names_list, cutoff = args.cutoff, list_particles_per_residue = args.list_particles_per_residue, output_path = args.output_path, alchembed_b_value = args.alchembed_b_value, alchembed_resolution = args.alchembed_resolution, alchembed_steps = args.alchembed_steps, alchembed_alpha = args.alchembed_alpha, alchembed_dt = args.alchembed_dt, topology_filepath = args.topology_filepath):
     if not len(residue_names_list) == int(len(index_list) / 2.):
@@ -109,5 +95,19 @@ def run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, in
 
     
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-input_coord_file_path", type=str)
+    parser.add_argument('-index_list', nargs='+', required=True, type=int) #should be list of alternating start and end indices
+    parser.add_argument('-residue_names_list', nargs='+', required=True, type=str) #should be half as long as index_list
+    parser.add_argument("-cutoff", type=float, help="cutoff (A)")
+    parser.add_argument('-list_particles_per_residue', nargs='+', required=True, type=int) #should be half as long as index_list
+    parser.add_argument("-output_path", type=str) #absolute path for data output (i.e., for writing pickle / plot files)
+    parser.add_argument("-alchembed_b_value", type=int, default = 2)  # b = 2 appears to be optimal based on the Alchembed paper, so that is the default
+    parser.add_argument("-alchembed_resolution", type=str, default = 'CG')  # the simulation 'resolution' (AT vs. CG -- currently only have CG .mdp implemented)
+    parser.add_argument("-alchembed_steps", type=int, default = 1000)  # code will use this as a starting point, but if it doesn't succeed it will increase the number of steps
+    parser.add_argument("-alchembed_alpha", type=float, default = 0.1)  
+    parser.add_argument("-alchembed_dt", type=float, default = 0.01)  
+    parser.add_argument("-topology_filepath", type=str) # for GROMACS .top file
+    args = parser.parse_args()
     run_steric_resolution_loop()
 
