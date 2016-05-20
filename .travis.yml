@@ -9,13 +9,13 @@ services:
 before_install:
   - sudo apt-get update
   - sudo DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" install docker-engine=1.10.3-0~trusty
-  - pip install nose
+  - pip install nose coveralls
 
 install:
   - docker build -t tylerreddy/steric-conflict-resolution docker_build/
 
 script:
-  - nosetests tests.py
+  - nosetests --with-coverage --cover-package run_steric_resolution tests.py
 
 after_success:
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
