@@ -47,3 +47,18 @@ class TestSimpleCopiesDPPC(unittest.TestCase):
             list_steric_conflicts_by_round.append(num_residues_with_steric_conflicts)
         self.assertEqual(min(list_steric_conflicts_by_round), 0, "The dppc_simple_copies.gro file should have all steric conflicts resolved by the last round of steric resolution.")
 
+class TestLoopArgCheck(unittest.TestCase):
+    '''Check that sys.exit() is called appropriately within run_steric_resolution_loop().'''
+
+    def test_residue_names_list(self):
+        with self.assertRaises(SystemExit) as context:
+            run_steric_resolution.run_steric_resolution_loop(input_coord_file='dummy', index_list = [1, 24,48,60], residue_names_list = ['DPPC'], cutoff = 2.0, list_particles_per_residue = [12, 16], output_path = 'dummy', topology_filepath = 'dummy', alchembed_b_value = 2, alchembed_resolution = 'CG', alchembed_steps = 1000, alchembed_alpha = 0.1, alchembed_dt = 0.01)
+        self.assertEqual('The residue_names_list should be half as long as the index_list as the latter contains start & end indices for each residue.' , context.exception.message)
+
+    def test_list_particles_per_residue(self):
+        with self.assertRaises(SystemExit) as context:
+            run_steric_resolution.run_steric_resolution_loop(input_coord_file='dummy', index_list = [1, 24,48,60], residue_names_list = ['DPPC', 'POPS'], cutoff = 2.0, list_particles_per_residue = [12], output_path = 'dummy', topology_filepath = 'dummy', alchembed_b_value = 2, alchembed_resolution = 'CG', alchembed_steps = 1000, alchembed_alpha = 0.1, alchembed_dt = 0.01)
+        self.assertEqual('The list_particles_per_residue should be half as long as the index_list as the latter contains start & end indices for each residue.', context.exception.message)
+            
+        
+
