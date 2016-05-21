@@ -6,19 +6,21 @@ import numpy.testing
 import cPickle as pickle
 import run_steric_resolution
 import subprocess
+import mock
 
 class TestArgparse(unittest.TestCase):
     '''Test argparse code.'''
 
     def test_parser_simple_dppc_input(self):
-        args = run_steric_resolution.parse_args(['-input_coord_file_path /steric_conflict_resolution_work/test_data/dppc_simple_copies/dppc_simple_copies.gro', '-index_list 1 24','-residue_names_list DPPC', '-cutoff 2.0','-list_particles_per_residue 12','-output_path /steric_conflict_resolution_work/dppc_simple_test_argparse', '-topology_filepath /steric_conflict_resolution_work/test_data/dppc_simple_copies/sys.top'])
-        self.assertEqual(args.input_coord_file_path , '/steric_conflict_resolution_work/test_data/dppc_simple_copies/dppc_simple_copies.gro')
-        self.assertEqual(args.index_list , [1, 24])
-        self.assertEqual(args.residue_names_list , ['DPPC'])
-        self.assertEqual(args.cutoff , 2.0)
-        self.assertEqual(args.list_particles_per_residue , [12])
-        self.assertEqual(args.output_path , '/steric_conflict_resolution_work/dppc_simple_test_argparse')
-        self.assertEqual(args.topology_filepath , '/steric_conflict_resolution_work/test_data/dppc_simple_copies/sys.top')
+        with mock.patch('sys.argv', ['-input_coord_file_path /steric_conflict_resolution_work/test_data/dppc_simple_copies/dppc_simple_copies.gro', '-index_list 1 24','-residue_names_list DPPC', '-cutoff 2.0','-list_particles_per_residue 12','-output_path /steric_conflict_resolution_work/dppc_simple_test_argparse', '-topology_filepath /steric_conflict_resolution_work/test_data/dppc_simple_copies/sys.top']):
+            args = run_steric_resolution.parse_args()
+            self.assertEqual(args.input_coord_file_path , '/steric_conflict_resolution_work/test_data/dppc_simple_copies/dppc_simple_copies.gro')
+            self.assertEqual(args.index_list , [1, 24])
+            self.assertEqual(args.residue_names_list , ['DPPC'])
+            self.assertEqual(args.cutoff , 2.0)
+            self.assertEqual(args.list_particles_per_residue , [12])
+            self.assertEqual(args.output_path , '/steric_conflict_resolution_work/dppc_simple_test_argparse')
+            self.assertEqual(args.topology_filepath , '/steric_conflict_resolution_work/test_data/dppc_simple_copies/sys.top')
 
 class TestSimpleCopiesDPPC(unittest.TestCase):
     '''Test that the docker image can completely resolve steric conflicts in the simple case of two superposed DPPC molecules.'''

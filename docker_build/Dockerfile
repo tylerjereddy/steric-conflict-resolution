@@ -10,7 +10,7 @@ RUN tar xfz gromacs-5.1.2.tar.gz && cd gromacs-5.1.2 && mkdir build && cd build 
 RUN echo "source /usr/local/gromacs/bin/GMXRC" >> ~/.bashrc
 ADD *py /steric_conflict_resolution/
 ADD test_data /steric_conflict_resolution_work/test_data
-RUN pip install nose coveralls
+RUN pip install nose coveralls mock
 
 #coveralls currently requires a git repo & unique commit to submit the report, so
 #do this artificially:
