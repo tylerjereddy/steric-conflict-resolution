@@ -13,7 +13,7 @@ class TestArgparse(unittest.TestCase):
 
     def test_parser_simple_dppc_input(self):
         with mock.patch('sys.argv', ['-input_coord_file_path /steric_conflict_resolution_work/test_data/dppc_simple_copies/dppc_simple_copies.gro', '-index_list 1 24','-residue_names_list DPPC', '-cutoff 2.0','-list_particles_per_residue 12','-output_path /steric_conflict_resolution_work/dppc_simple_test_argparse', '-topology_filepath /steric_conflict_resolution_work/test_data/dppc_simple_copies/sys.top']):
-            args = run_steric_resolution.parse_args()
+            args = run_steric_resolution.parse_args(sys.argv)
             self.assertEqual(args.input_coord_file_path , '/steric_conflict_resolution_work/test_data/dppc_simple_copies/dppc_simple_copies.gro')
             self.assertEqual(args.index_list , [1, 24])
             self.assertEqual(args.residue_names_list , ['DPPC'])
