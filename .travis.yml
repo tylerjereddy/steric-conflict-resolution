@@ -15,7 +15,7 @@ install:
 
 script:
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
-     docker run -e "COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN" tylerreddy/steric-conflict-resolution /bin/sh -c "cd /steric_conflict_resolution; nosetests --verbosity=3 --with-coverage --cover-package run_steric_resolution tests.py 2>&1 | tee nose.log; coveralls; tail -1 nose.log | grep -q OK";
+     docker run -e "COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN" tylerreddy/steric-conflict-resolution /bin/sh -c "cd /steric_conflict_resolution; nosetests --verbosity=3 --with-coverage --cover-package run_steric_resolution generate_mdp tests.py 2>&1 | tee nose.log; coveralls; tail -1 nose.log | grep -q OK";
     else 
      docker run tylerreddy/steric-conflict-resolution /bin/sh -c "cd /steric_conflict_resolution; nosetests --verbosity=3 --with-coverage --cover-package run_steric_resolution tests.py 2>&1 | tee nose.log; tail -1 nose.log | grep -q OK";
     fi 
