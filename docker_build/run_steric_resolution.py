@@ -101,9 +101,12 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         #run the alchembed 'simulation' on a single core
         print 'starting alchembed simulation for round ', round_number
         output_deffnm = alchembed_mdp_filename[:-4]
-        subprocess.call(['/bin/bash','-i','-c','gmx mdrun -v -stepout 100 -s {tpr_filename} -deffnm {output_deffnm} -nt 1'.format(tpr_filename=tpr_filename, round_number=round_number, output_deffnm=output_deffnm)])
+        mdrun_exit_code = subprocess.call(['/bin/bash','-i','-c','gmx mdrun -v -stepout 100 -s {tpr_filename} -deffnm {output_deffnm} -nt 1'.format(tpr_filename=tpr_filename, round_number=round_number, output_deffnm=output_deffnm)])
+        if mdrun_exit_code == 0: #mdrun didn't crash
+            input_coord_file = output_deffnm + '.gro' # set coord file for next round
+        else: #mdrun crashed for whatever reason, so the input file remains the same in the next round...
+            pass
         print 'finished alchembed simulation for round ', round_number
-        input_coord_file = output_deffnm + '.gro' # set coord file for next round
         round_number += 1
 
 if __name__ == '__main__':
