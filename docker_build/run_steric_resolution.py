@@ -78,8 +78,8 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
             break
 
         #likewise, exit the while loop if two consecutive rounds have failed to improve the steric situation
-        if consecutive_rounds_without_improvement == 2:
-            print 'Exiting loop because two consecutive steric conflict resolution rounds have failed to improve the situation.'
+        if consecutive_rounds_without_improvement == 20:
+            print 'Exiting loop because 20 consecutive steric conflict resolution rounds have failed to improve the situation.'
             break
 
         #if there may still be something to gain with another round of alchembed, run it based on user-specified parameters
@@ -88,10 +88,15 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         alchembed_mdp_filename = '{output_path}/alchembed_round_{round_number}.mdp'.format(output_path=output_path, round_number=round_number)
         if consecutive_rounds_without_improvement == 0:
             actual_alchembed_steps = alchembed_steps
+            alchembed_delta_lambda = 1. / float(actual_alchembed_steps)
+        elif consecutive_rounds_without_improvement == 1:
+            actual_alchembed_steps = alchembed_steps * 10 #slow it down if last attempt was problematic
+            alchembed_delta_lambda = 1. / float(actual_alchembed_steps)
         else:
             actual_alchembed_steps = alchembed_steps * 10 #slow it down if last attempt was problematic
+            #terminate at a progessively lower lambda value if mdrun failures continue to accumulate
+            alchembed_delta_lambda = (1.0/float(consecutive_rounds_without_improvement)) / float(actual_alchembed_steps)
 
-        alchembed_delta_lambda = 1. / float(actual_alchembed_steps)
         generate_mdp.generate_mdp(resolution=alchembed_resolution, output_filename = alchembed_mdp_filename, b = alchembed_b_value, steps = actual_alchembed_steps, delta_lambda = alchembed_delta_lambda, alpha = alchembed_alpha, dt = alchembed_dt)
 
         #generate alchembed tpr file
