@@ -58,6 +58,8 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         start_time = time.time()
         cumulative_array_per_residue_steric_conflicts = steric_assessment_all_species(round_number)
         num_residues_with_steric_conflicts = np.count_nonzero(cumulative_array_per_residue_steric_conflicts)
+        # it may be sensible to apply position restraints to those residues with minimal steric conflicts -- as a first step, identify them
+        indices_residues_minimal_steric_conflicts = np.argmin(cumulative_array_per_residue_steric_conflicts)
         percentage_residues_with_steric_conflicts = (float(num_residues_with_steric_conflicts) / float(cumulative_array_per_residue_steric_conflicts.shape[0])) * 100.
         if percentage_residues_with_steric_conflicts >= percentage_residues_with_steric_conflicts_previous_round and not round_number==1:
             consecutive_rounds_without_improvement += 1
@@ -84,6 +86,12 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
 
         #if there may still be something to gain with another round of alchembed, run it based on user-specified parameters
         
+        # because .mdp files contain some information related to position restraints (i.e., define line), before writing the .mdp file I will want to re-write the coordinate file with separate contiguous groups for the residues involved in indices_residues_minimal_steric_conflicts; I will also need a custom .top file that reflects the associated unique residue names and corresponding forcefield files (basically, the same residue type will need unique names & forcefield files if it falls in the minimal group where some of its molecules are to be restrained and others are not)
+
+        # assuming that we actually have some 'minimum steric conflict' residues, what is the best way to separate them out from the others and re-write the coordinates/ topology / etc?
+        # can probably use MDAnalysis to perform the necessary operations on indexed residue objects
+
+
         #we will need to generate an .mdp file for the alchembed simulation
         alchembed_mdp_filename = '{output_path}/alchembed_round_{round_number}.mdp'.format(output_path=output_path, round_number=round_number)
         if consecutive_rounds_without_improvement == 0:
