@@ -7,6 +7,7 @@ import subprocess
 import cPickle as pickle
 import numpy as np
 import generate_mdp
+import collections
 
 def parse_args(args):
     parser = argparse.ArgumentParser()
@@ -90,6 +91,23 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
 
         # assuming that we actually have some 'minimum steric conflict' residues, what is the best way to separate them out from the others and re-write the coordinates/ topology / etc?
         # can probably use MDAnalysis to perform the necessary operations on indexed residue objects
+        u = MDAnalysis.Universe(input_coord_file)
+        all_selection = u.select_atoms('all')
+        residues = all_selection.residues
+        residues_to_restrain = residues[indices_residues_minimal_steric_conflicts] # will this work as intended?
+        # now, try to rewrite the input coordinate file with restrained and unrestrained residues separated (but might make sense to have the same residue type follow in a restrained / non-restrained topology ordering)
+        # need to access the names of the affected residues in order here?
+        dictionary_residues_to_restrain = collections.defaultdict(list)
+        for residue_object in residues_to_restrain:
+            residue_name = residue_object.name
+            residue_coordinates = residue_object.atoms.coordinates
+            dictionary_residues_to_restrain[residue_name].append(residue_coordinates)
+        # so, dictionary_residues_to_restrain should have a data structure like this: {'POPS': [POPS_1_coords, POPS_2_coords], ... }
+
+
+
+
+        
 
 
         #we will need to generate an .mdp file for the alchembed simulation
