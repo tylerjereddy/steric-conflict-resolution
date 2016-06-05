@@ -100,9 +100,9 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         dictionary_residues_to_restrain = collections.defaultdict(list)
         for residue_object in residues_to_restrain:
             residue_name = residue_object.name
-            residue_coordinates = residue_object.atoms.coordinates
-            dictionary_residues_to_restrain[residue_name].append(residue_coordinates)
-        # so, dictionary_residues_to_restrain should have a data structure like this: {'POPS': [POPS_1_coords, POPS_2_coords], ... }
+            residue_ag = residue_object.atoms
+            dictionary_residues_to_restrain[residue_name].append(residue_ag)
+        # so, dictionary_residues_to_restrain should have a data structure like this: {'POPS': [POPS_1_ag, POPS_2_ag], ... }
 
         # if we're going to write a new universe we'll also need information for the residues that are not to be position restrained (in a format that will allow me to access on a per-residue-type basis, because I'll want to rewrite the coordinates with i.e., POPS-restrained, POPS-unrestrained, DOPE-restrained, DOPE-unrestrained topology configuration)
         total_num_residues = all_selection.n_residues
@@ -112,9 +112,37 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         dictionary_residues_not_restrained = collections.defaultdict(list)
         for residue_object in unrestrained_residues:
             residue_name = residue_object.name
-            residue_coordinates = residue_object.atoms.coordinates
-            dictionary_residues_not_restrained[residue_name].append(residue_coordinates)
+            residue_ag = residue_object.atoms
+            dictionary_residues_not_restrained[residue_name].append(residue_ag)
         # so, dictionary_residues_not_restrained will have a similar data structure to the restrained version
+
+        # iterate through all the residue types in the system, first writing the restrained and then the unrestrained versions of the residues, all while keeping track of the topological details so that I can write the custom .top file later on as well
+        topology_data_list = []
+        output_universe = MDAnalysis.Universe()
+        unique_residue_names = set(dictionary_residues_to_restrain.keys() + dictionary_residues_not_restrained.keys())
+        for residue_name in unique_residue_names:
+            if residue_name in dictionary_residues_to_restrain.keys():
+                new_restrained_residue_name = 'R' + residue_name[1:] #create a unique residue name for the restrained version of the residue (so that separate .itp may be used, etc.)
+                list_restrained_residue_atomgroups = dictionary_residues_to_restrain[residue_name]
+                for ag in list_restrained_residue_atomgroups:
+                        ag.set_resnames(new_restrained_residue_name)
+                output_universe = MDAnalysis.Merge(output_universe.atoms, *list_restrained_residue_atomgroups, *dictionary_residues_not_restrained[residue_name])
+                topology_data_list.append((new_restrained_residue_name, len(list_restrained_residue_atomgroups))
+                topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name]))
+            else: #just merge in the unrestrained residues if there are no restrained targets for this residue type
+                output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
+                topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name]))
+
+        # write the new input data to a coord file
+        adjusted_coords = 'adjusted_coords.gro'
+        output_universe.atoms.write(adjusted_coords)
+        input_coord_file = adjusted_coords #use the new coord file as the algorithm input
+
+        # up next, need to deal with writing new .top and .itp files in preparation for the selective application of position restraints
+
+
+
+
 
 
 
