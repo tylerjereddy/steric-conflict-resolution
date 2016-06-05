@@ -104,6 +104,23 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
             dictionary_residues_to_restrain[residue_name].append(residue_coordinates)
         # so, dictionary_residues_to_restrain should have a data structure like this: {'POPS': [POPS_1_coords, POPS_2_coords], ... }
 
+        # if we're going to write a new universe we'll also need information for the residues that are not to be position restrained (in a format that will allow me to access on a per-residue-type basis, because I'll want to rewrite the coordinates with i.e., POPS-restrained, POPS-unrestrained, DOPE-restrained, DOPE-unrestrained topology configuration)
+        total_num_residues = all_selection.n_residues
+        array_all_residue_numbers = np.arange(total_num_residues)
+        mask_residues_not_restrained = np.in1d(array_all_residue_numbers, indices_residues_minimal_steric_conflicts, invert=True)
+        unrestrained_residues = residues[mask_residues_not_restrained]
+        dictionary_residues_not_restrained = collections.defaultdict(list)
+        for residue_object in unrestrained_residues:
+            residue_name = residue_object.name
+            residue_coordinates = residue_object.atoms.coordinates
+            dictionary_residues_not_restrained[residue_name].append(residue_coordinates)
+        # so, dictionary_residues_not_restrained will have a similar data structure to the restrained version
+
+
+
+
+        
+
 
 
 
