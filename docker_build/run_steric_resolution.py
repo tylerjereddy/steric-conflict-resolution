@@ -139,6 +139,30 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         input_coord_file = adjusted_coords #use the new coord file as the algorithm input
 
         # up next, need to deal with writing new .top and .itp files in preparation for the selective application of position restraints
+        # use topology_data_list as part of the process to generate the new .top file (and perhaps consider cannibilizing the old / input .top file?)
+        # variable: topology_filepath
+        molecules_section = 0
+        with open(topology_filepath, 'r') as input_topology:
+            with open('adjusted_topology.top', 'w') as output_topology:
+                for line in input_topology:
+                    if '#include' in line:
+                        output_topology.write(line)
+                    elif '[ molecules ]' in line:
+                        output_topology.write(line)
+                        molecules_section += 1
+                    elif molecules_section > 0:
+                        for residue_name, num_residues in topology_data_list:
+                            output_topology.write(residue_name + ' ' + num_residues + '\n')
+                    else: 
+                        output_topology.write(line)
+
+                
+
+                
+                
+                
+
+
 
 
 
