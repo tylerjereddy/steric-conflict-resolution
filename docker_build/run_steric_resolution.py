@@ -151,6 +151,41 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                     itp_filepath = forcefield_parent_filepath + itp_filename
                     list_input_itp_filepaths.append(itp_filepath)
 
+        # now, try to generate the new .itp files that are needed for application of position restraints (will probably always want to keep copies of the old .itp files as well as we'll likely often have a number of residues that are to remain unrestrained)
+        residue_names_to_restrain = dictionary_residues_to_restrain.keys()
+        list_new_restrained_itp_files = []
+        for input_itp_filepath in list_input_itp_filepaths:
+            # it will only be necessary to produce special 'restrained' .itp files for the applicable ('minimum conflict') residues
+            with open(input_itp_filepath, 'r') as input_itp_file:
+                list_input_itp_file_lines = input_itp_file.readlines()
+                index_counter = 0
+                for line in list_input_itp_file_lines:
+                    if 'molname' in line:
+                        name_line_index = index_counter + 1
+                        break
+                    else:
+                        index_counter += 1
+                current_residue_name = list_input_itp_file_lines[name_line_index].split(' ')[0]
+                candidate_restrained_residue_name = 'R' + current_residue_name[1:]
+                if candidate_restrained_residue_name in residue_names_to_restrain:
+                    #need to generate a special 'restrained' .itp file
+                    current_itp_filename = input_itp_filepath.split('/')[-1]
+                    new_restrained_itp_filename = current_itp_filename.split('.')[0] + '_restrained.itp'
+                    list_new_restrained_itp_files.append(new_restrained_itp_filename)
+                    new_restrained_itp_filepath = ''.join(input_itp_filepath.split('/')[:-1]) + new_restrained_itp_filename
+                    with open(new_restrained_itp_filepath, 'w') as output_itp_file:
+                        # I'll want to use the new molname in the new (restrained) .itp
+                        # also: place an appropriate [ position_restraints ] section within the [ moleculetype ] section
+
+                    
+
+
+
+
+
+            
+
+
         # use topology_data_list as part of the process to generate the new .top file (and perhaps consider cannibilizing the old / input .top file?)
 
         molecules_section = 0
