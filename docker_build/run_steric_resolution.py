@@ -8,6 +8,7 @@ import cPickle as pickle
 import numpy as np
 import generate_mdp
 import collections
+import MDAnalysis
 
 def parse_args(args):
     parser = argparse.ArgumentParser()
