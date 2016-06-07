@@ -241,6 +241,10 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                 for line in input_topology:
                     if '#include' in line:
                         output_topology.write(line)
+                    elif '[ system ]' in line:
+                        for restrained_itp_filename in list_new_restrained_itp_files:
+                            output_topology.write('#include ' + '"' + restrained_itp_filename + '"\n')
+                        output_topology.write('[ system ]')
                     elif '[ molecules ]' in line:
                         output_topology.write(line)
                         molecules_section += 1
