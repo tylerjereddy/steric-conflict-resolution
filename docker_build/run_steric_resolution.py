@@ -132,7 +132,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                 topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name])))
             else: #just merge in the unrestrained residues if there are no restrained targets for this residue type
                 output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
-                topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name]))
+                topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name])))
 
         # write the new input data to a coord file
         adjusted_coords = 'adjusted_coords.gro'
