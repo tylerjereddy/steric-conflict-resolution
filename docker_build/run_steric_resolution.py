@@ -125,7 +125,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                 new_restrained_residue_name = 'R' + residue_name[1:] #create a unique residue name for the restrained version of the residue (so that separate .itp may be used, etc.)
                 list_restrained_residue_atomgroups = dictionary_residues_to_restrain[residue_name]
                 for ag in list_restrained_residue_atomgroups:
-                        ag.set_resnames(new_restrained_residue_name)
+                    ag.set_resnames(new_restrained_residue_name)
                 output_universe = MDAnalysis.Merge(output_universe.atoms, *list_restrained_residue_atomgroups, *dictionary_residues_not_restrained[residue_name])
                 topology_data_list.append((new_restrained_residue_name, len(list_restrained_residue_atomgroups))
                 topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name]))
