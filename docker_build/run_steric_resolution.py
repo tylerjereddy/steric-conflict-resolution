@@ -168,14 +168,61 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                 current_residue_name = list_input_itp_file_lines[name_line_index].split(' ')[0]
                 candidate_restrained_residue_name = 'R' + current_residue_name[1:]
                 if candidate_restrained_residue_name in residue_names_to_restrain:
-                    #need to generate a special 'restrained' .itp file
+                    #need to generate a special 'restrained' .itp file (will modify the list_input_itp_file_lines)
                     current_itp_filename = input_itp_filepath.split('/')[-1]
                     new_restrained_itp_filename = current_itp_filename.split('.')[0] + '_restrained.itp'
                     list_new_restrained_itp_files.append(new_restrained_itp_filename)
                     new_restrained_itp_filepath = ''.join(input_itp_filepath.split('/')[:-1]) + new_restrained_itp_filename
                     with open(new_restrained_itp_filepath, 'w') as output_itp_file:
                         # I'll want to use the new molname in the new (restrained) .itp
+                        adjusted_name_line = candidate_restrained_residue_name + ' ' +  list_input_itp_file_lines[name_line_index].split(' ')[1] + '\n'
+                        list_input_itp_file_lines[name_line_index] = adjusted_name_line
                         # also: place an appropriate [ position_restraints ] section within the [ moleculetype ] section
+                        # identify the indices of the lines between which the [ position_restraints ] information will be spliced in
+                        index_counter = 0
+                        for line in list_input_itp_file_lines:
+                            if 'moleculetype' in line:
+                                posres_start_index = index_counter + 3
+                                break
+                            else:
+                                index_counter += 1
+
+                        list_new_posres_lines = []
+                        list_new_posres_lines.append('[ position_restraints ]\n')
+                        list_new_posres_lines.append('; ai  funct  fcx    fcy    fcz\n')
+
+                        def generate_posres_line(atom_index):
+                            '''Use the atom_index integer argument to generate a strong position restraint line (force of 1000 in all dimensions).
+                            Should return the appropriate string for the line.'''
+                            return '   {atom_index}    1    1000   1000   1000\n'.format(atom_index=atom_index)
+
+                        # need to determine the total number of atoms in the molecule in the input itp file to appropriately generate the position restraint data
+                        atom_counter = 0
+                        start_counting = 0
+                        for line in list_input_itp_file_lines:
+                            if '[atoms]' in line:
+                                start_counting += 1
+                            elif start_counting > 0 and current_residue_name in line: #should match an atom line
+                                atom_counter += 1
+
+                        for atom_index in xrange(1,atom_counter + 1):
+                            posres_string = generate_posres_line(atom_index)
+                            list_new_posres_lines.append(posres_string)
+
+                        # up next, combine the new posres lines with list_input_itp_file_lines (for eventual writing to the new .itp file)
+                        list_new_itp_file_lines = list_input_itp_file_lines[:posres_start_index] + list_new_posres_lines + list_input_itp_file_lines[posres_start_index:]
+
+                        # it may also be sensible to replace all instances of the old residue name in the itp file with the new (restrained) residue name (if only to alleviate confusion)
+                        list_new_itp_file_lines_renamed = []
+                        for line in list_new_itp_file_lines:
+                            list_new_itp_file_lines_renamed.append(line.replace(current_residue_name, candidate_restrained_residue_name))
+
+                        output_itp_file.writelines(list_new_itp_file_lines_renamed)
+
+
+
+                            
+
 
                     
 
