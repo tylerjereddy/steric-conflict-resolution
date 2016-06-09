@@ -62,6 +62,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         num_residues_with_steric_conflicts = np.count_nonzero(cumulative_array_per_residue_steric_conflicts)
         # it may be sensible to apply position restraints to those residues with minimal steric conflicts -- as a first step, identify them
         indices_residues_minimal_steric_conflicts = np.argmin(cumulative_array_per_residue_steric_conflicts)
+        print '**debug indices_residues_minimal_steric_conflicts:', indices_residues_minimal_steric_conflicts
         percentage_residues_with_steric_conflicts = (float(num_residues_with_steric_conflicts) / float(cumulative_array_per_residue_steric_conflicts.shape[0])) * 100.
         if percentage_residues_with_steric_conflicts >= percentage_residues_with_steric_conflicts_previous_round and not round_number==1:
             consecutive_rounds_without_improvement += 1
