@@ -97,6 +97,8 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         u = MDAnalysis.Universe(input_coord_file)
         all_selection = u.select_atoms('all')
         residues = all_selection.residues
+        print '**debug len(residues):', len(residues)
+        print '**debug residues:', residues
         residues_to_restrain = residues[indices_residues_minimal_steric_conflicts] # will this work as intended?
         # now, try to rewrite the input coordinate file with restrained and unrestrained residues separated (but might make sense to have the same residue type follow in a restrained / non-restrained topology ordering)
         # need to access the names of the affected residues in order here?
