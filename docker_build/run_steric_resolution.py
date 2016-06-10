@@ -96,6 +96,8 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         # can probably use MDAnalysis to perform the necessary operations on indexed residue objects
         u = MDAnalysis.Universe(input_coord_file)
         all_selection = u.select_atoms('all')
+        print '**debug all_selection:', all_selection
+        print '**debug all_selection.n_atoms:', all_selection.n_atoms
         residues = all_selection.residues
         print '**debug len(residues):', len(residues)
         print '**debug residues:', residues
