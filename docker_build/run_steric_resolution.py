@@ -310,6 +310,10 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
 
         #generate alchembed tpr file
         tpr_filename = alchembed_mdp_filename.replace('mdp','tpr')
+        print '**debug -- printing out topology file used (before calling grompp in round {round_num}):'.format(round_num = round_number)
+        with open(topology_filepath, 'r') as top_file_used:
+            for line in top_file_used:
+                print line
         subprocess.call(['/bin/bash','-i','-c','gmx grompp -f {mdp_file} -c {input_coords_current_round} -p {top_file} -o {tpr_filename} -maxwarn 99'.format(mdp_file=alchembed_mdp_filename, input_coords_current_round=input_coord_file, top_file=topology_filepath, tpr_filename=tpr_filename)])
 
         #run the alchembed 'simulation' on a single core
