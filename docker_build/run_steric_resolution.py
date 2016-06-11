@@ -133,12 +133,18 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                 list_restrained_residue_atomgroups = dictionary_residues_to_restrain[residue_name]
                 for ag in list_restrained_residue_atomgroups:
                     ag.set_resnames(new_restrained_residue_name)
-                output_universe = MDAnalysis.Merge(output_universe.atoms, *list_restrained_residue_atomgroups)
+                if output_universe.select_atoms('all').n_atoms == 0:
+                    output_universe = MDAnalysis.Merge(*list_restrained_residue_atomgroups)
+                else:
+                    output_universe = MDAnalysis.Merge(output_universe.atoms, *list_restrained_residue_atomgroups)
                 output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
                 topology_data_list.append((new_restrained_residue_name, len(list_restrained_residue_atomgroups)))
                 topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name])))
             else: #just merge in the unrestrained residues if there are no restrained targets for this residue type
-                output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
+                if output_universe.select_atoms('all').n_atoms == 0:
+                    output_universe = MDAnalysis.Merge(*dictionary_residues_not_restrained[residue_name])
+                else:
+                    output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
                 topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name])))
 
         # write the new input data to a coord file
