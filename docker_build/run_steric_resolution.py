@@ -251,7 +251,10 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
 
         molecules_section = 0
         with open(topology_filepath, 'r') as input_topology:
-            with open('adjusted_topology.top', 'w') as output_topology:
+            print '**debug topology_filepath before adjustment round {round_num}'.format(round_num = round_number), topology_filepath
+            topology_filepath = '/'.join(topology_filepath.split('/')[:-1]) + '/adjusted_topology.top'
+            print '**debug topology_filepath after adjustment round {round_num}'.format(round_num = round_number), topology_filepath
+            with open(topology_filepath, 'w') as output_topology:
                 for line in input_topology:
                     if '#include' in line:
                         output_topology.write(line)
@@ -268,9 +271,6 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                     else: 
                         output_topology.write(line)
 
-        print '**debug topology_filepath before adjustment round {round_num}'.format(round_num = round_number), topology_filepath
-        topology_filepath = '/'.join(topology_filepath.split('/')[:-1]) + '/adjusted_topology.top'
-        print '**debug topology_filepath after adjustment round {round_num}'.format(round_num = round_number), topology_filepath
 
                 
                 
