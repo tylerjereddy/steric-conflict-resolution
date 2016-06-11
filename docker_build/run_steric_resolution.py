@@ -268,7 +268,9 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                     else: 
                         output_topology.write(line)
 
+        print '**debug topology_filepath before adjustment round {round_num}'.format(round_num = round_number), topology_filepath
         topology_filepath = '/'.join(topology_filepath.split('/')[:-1]) + '/adjusted_topology.top'
+        print '**debug topology_filepath after adjustment round {round_num}'.format(round_num = round_number), topology_filepath
 
                 
                 
