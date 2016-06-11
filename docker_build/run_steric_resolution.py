@@ -268,7 +268,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                     else: 
                         output_topology.write(line)
 
-        topology_filepath = ''.join(topology_filepath.split('/')[:-1]) + 'adjusted_topology.top'
+        topology_filepath = '/'.join(topology_filepath.split('/')[:-1]) + '/adjusted_topology.top'
 
                 
                 
