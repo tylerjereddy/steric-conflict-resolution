@@ -161,7 +161,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         with open(topology_filepath, 'r') as input_topology:
             for line in input_topology:
                 if '#include' in line:
-                    itp_filename = line.split(' ')[1].replace('"','').replace("'",'')
+                    itp_filename = line.split(' ')[1].replace('"','').replace("'",'').rstrip()
                     itp_filepath = forcefield_parent_filepath + itp_filename
                     list_input_itp_filepaths.append(itp_filepath)
 
