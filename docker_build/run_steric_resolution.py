@@ -155,7 +155,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         # up next, need to deal with writing new .top and .itp files in preparation for the selective application of position restraints
         # the new topology file will have to include the new .itp files that enable position restraints so I should generate the new .itp files before trying to generate the new .top file
         # however, to obtain the paths of the current .itp files (which I will presumably want to modify programmatically) I will likely want to use the path of the input topology file
-        forcefield_parent_filepath = '/'.join(topology_filepath.split('/')[:-1]) # remove the .top file name to obtain the parent path for the input .itp files
+        forcefield_parent_filepath = '/'.join(topology_filepath.split('/')[:-1]) + '/' # remove the .top file name to obtain the parent path for the input .itp files
         # generate a list of the full filepaths for each .itp file by parsing the topology_filepath
         list_input_itp_filepaths = []
         with open(topology_filepath, 'r') as input_topology:
