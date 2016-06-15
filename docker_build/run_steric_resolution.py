@@ -249,6 +249,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
 
         # use topology_data_list as part of the process to generate the new .top file (and perhaps consider cannibilizing the old / input .top file?)
 
+        print '**debug: list_new_restrained_itp_files:', list_new_restrained_itp_files
         molecules_section = 0
         with open(topology_filepath, 'r') as input_topology:
             print '**debug topology_filepath before adjustment round {round_num}'.format(round_num = round_number), topology_filepath
