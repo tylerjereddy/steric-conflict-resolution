@@ -167,26 +167,38 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
 
         # now, try to generate the new .itp files that are needed for application of position restraints (will probably always want to keep copies of the old .itp files as well as we'll likely often have a number of residues that are to remain unrestrained)
         residue_names_to_restrain = dictionary_residues_to_restrain.keys()
+        print '**debug residue_names_to_restrain:', residue_names_to_restrain
         list_new_restrained_itp_files = []
         for input_itp_filepath in list_input_itp_filepaths:
+            if 'restrained' in input_itp_filepath:
+                continue
+            residue_found = 0
             # it will only be necessary to produce special 'restrained' .itp files for the applicable ('minimum conflict') residues
             with open(input_itp_filepath, 'r') as input_itp_file:
                 list_input_itp_file_lines = input_itp_file.readlines()
                 index_counter = 0
                 for line in list_input_itp_file_lines:
-                    if 'molname' in line:
+                    if 'molname' in line and list_input_itp_file_lines[index_counter + 1].strip().split()[0] in residue_names_to_restrain:
                         name_line_index = index_counter + 1
+                        residue_found += 1
                         break
                     else:
                         index_counter += 1
-                current_residue_name = list_input_itp_file_lines[name_line_index].split(' ')[0]
+                if residue_found == 0:
+                    continue
+                print '**debug list_input_itp_file_lines[name_line_index].strip().split(' '):', list_input_itp_file_lines[name_line_index].strip().split(' ')
+                current_residue_name = list_input_itp_file_lines[name_line_index].strip().split(' ')[0]
+                print '**debug current_residue_name:', current_residue_name
                 candidate_restrained_residue_name = 'R' + current_residue_name[1:]
-                if candidate_restrained_residue_name in residue_names_to_restrain:
+                print '**debug candidate_restrained_residue_name:', candidate_restrained_residue_name
+                if candidate_restrained_residue_name in residue_names_to_restrain or current_residue_name in residue_names_to_restrain:
                     #need to generate a special 'restrained' .itp file (will modify the list_input_itp_file_lines)
                     current_itp_filename = input_itp_filepath.split('/')[-1]
-                    new_restrained_itp_filename = current_itp_filename.split('.')[0] + '_restrained.itp'
+                    new_restrained_itp_filename = ''.join(current_itp_filename.split('.')[:-1]) + '_restrained.itp'
+                    print '**debug new_restrained_itp_filename:', new_restrained_itp_filename
                     list_new_restrained_itp_files.append(new_restrained_itp_filename)
-                    new_restrained_itp_filepath = ''.join(input_itp_filepath.split('/')[:-1]) + new_restrained_itp_filename
+                    new_restrained_itp_filepath = '/'.join(input_itp_filepath.split('/')[:-1]) + '/' + new_restrained_itp_filename
+                    print '**debug new_restrained_itp_filepath:', new_restrained_itp_filepath
                     with open(new_restrained_itp_filepath, 'w') as output_itp_file:
                         # I'll want to use the new molname in the new (restrained) .itp
                         adjusted_name_line = candidate_restrained_residue_name + ' ' +  list_input_itp_file_lines[name_line_index].split(' ')[1] + '\n'
