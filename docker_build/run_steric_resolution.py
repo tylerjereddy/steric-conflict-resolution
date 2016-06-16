@@ -207,7 +207,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                         # identify the indices of the lines between which the [ position_restraints ] information will be spliced in
                         index_counter = 0
                         for line in list_input_itp_file_lines:
-                            if 'moleculetype' in line:
+                            if 'moleculetype' in line and list_input_itp_file_lines[index_counter + 2].strip().split()[0] in [candidate_restrained_residue_name, current_residue_name]:
                                 posres_start_index = index_counter + 3
                                 break
                             else:
