@@ -203,12 +203,14 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                         # I'll want to use the new molname in the new (restrained) .itp
                         adjusted_name_line = candidate_restrained_residue_name + ' ' +  list_input_itp_file_lines[name_line_index].split(' ')[1] + '\n'
                         list_input_itp_file_lines[name_line_index] = adjusted_name_line
+                        atom_counter = dictionary_residues_to_restrain[current_residue_name][0].n_atoms
+
                         # also: place an appropriate [ position_restraints ] section within the [ moleculetype ] section
                         # identify the indices of the lines between which the [ position_restraints ] information will be spliced in
                         index_counter = 0
                         for line in list_input_itp_file_lines:
                             if 'moleculetype' in line and list_input_itp_file_lines[index_counter + 2].strip().split()[0] in [candidate_restrained_residue_name, current_residue_name]:
-                                posres_start_index = index_counter + 3
+                                posres_start_index = index_counter + 6 + atom_counter #place posres info below [atom] data
                                 break
                             else:
                                 index_counter += 1
@@ -220,17 +222,13 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                         def generate_posres_line(atom_index):
                             '''Use the atom_index integer argument to generate a strong position restraint line (force of 1000 in all dimensions).
                             Should return the appropriate string for the line.'''
-                            return '   {atom_index}    1    1000   1000   1000\n'.format(atom_index=atom_index)
+                            if int(atom_index) <= 9:
+                                spaces = ' ' * 3
+                            else:
+                                spaces = ' ' * 2
+                            return spaces + '{atom_index}    1    1000   1000   1000\n'.format(atom_index=atom_index)
 
                         # need to determine the total number of atoms in the molecule in the input itp file to appropriately generate the position restraint data
-                        atom_counter = 0
-                        start_counting = 0
-                        for line in list_input_itp_file_lines:
-                            if '[atoms]' in line:
-                                start_counting += 1
-                            elif start_counting > 0 and current_residue_name in line: #should match an atom line
-                                atom_counter += 1
-
                         for atom_index in xrange(1,atom_counter + 1):
                             posres_string = generate_posres_line(atom_index)
                             list_new_posres_lines.append(posres_string)
