@@ -281,7 +281,8 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                         molecules_section += 1
                     elif molecules_section > 0 and not molecule_section_written:
                         for residue_name, num_residues in topology_data_list:
-                            output_topology.write(str(residue_name) + ' ' + str(num_residues) + '\n')
+                            if num_residues > 0:
+                                output_topology.write(str(residue_name) + ' ' + str(num_residues) + '\n')
                         molecule_section_written = True
                         break
                     else: 
