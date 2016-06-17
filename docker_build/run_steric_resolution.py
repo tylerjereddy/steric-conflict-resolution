@@ -146,6 +146,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                 else:
                     output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
                 topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name])))
+        print '**debug: topology_data_list:', topology_data_list
 
         # write the new input data to a coord file
         adjusted_coords = 'adjusted_coords.gro'
@@ -262,6 +263,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
 
         print '**debug: list_new_restrained_itp_files:', list_new_restrained_itp_files
         molecules_section = 0
+        molecule_section_written = False
         with open(topology_filepath, 'r') as input_topology:
             print '**debug topology_filepath before adjustment round {round_num}'.format(round_num = round_number), topology_filepath
             topology_filepath = '/'.join(topology_filepath.split('/')[:-1]) + '/adjusted_topology.top'
@@ -277,9 +279,11 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                     elif '[ molecules ]' in line:
                         output_topology.write(line)
                         molecules_section += 1
-                    elif molecules_section > 0:
+                    elif molecules_section > 0 and not molecule_section_written:
                         for residue_name, num_residues in topology_data_list:
                             output_topology.write(str(residue_name) + ' ' + str(num_residues) + '\n')
+                        molecule_section_written = True
+                        break
                     else: 
                         output_topology.write(line)
 
