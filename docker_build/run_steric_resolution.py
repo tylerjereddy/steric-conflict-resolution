@@ -149,14 +149,22 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         print '**debug: topology_data_list:', topology_data_list
 
         # write the new input data to a coord file
-        adjusted_coords = 'adjusted_coords.gro'
+        forcefield_parent_filepath = '/'.join(topology_filepath.split('/')[:-1]) + '/' # remove the .top file name to obtain the parent path for the input .itp files
+        adjusted_coords = forcefield_parent_filepath + 'adjusted_coords.gro'
         output_universe.atoms.write(adjusted_coords)
+        #adjust the box vectors (which get set to 0 for whatever reason)
+        print '**debug: adjusted_coords', adjusted_coords
+        with open(adjusted_coords, 'r') as input_file:
+            list_gro_lines = input_file.readlines()
+            new_list_gro_lines = list_gro_lines[:-1]
+            new_list_gro_lines.append(' 100.00000 100.00000 100.00000\n')
+        with open(adjusted_coords, 'w') as output_file:
+            output_file.writelines(new_list_gro_lines)
         input_coord_file = adjusted_coords #use the new coord file as the algorithm input
 
         # up next, need to deal with writing new .top and .itp files in preparation for the selective application of position restraints
         # the new topology file will have to include the new .itp files that enable position restraints so I should generate the new .itp files before trying to generate the new .top file
         # however, to obtain the paths of the current .itp files (which I will presumably want to modify programmatically) I will likely want to use the path of the input topology file
-        forcefield_parent_filepath = '/'.join(topology_filepath.split('/')[:-1]) + '/' # remove the .top file name to obtain the parent path for the input .itp files
         # generate a list of the full filepaths for each .itp file by parsing the topology_filepath
         list_input_itp_filepaths = []
         with open(topology_filepath, 'r') as input_topology:
