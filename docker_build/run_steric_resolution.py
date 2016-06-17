@@ -201,8 +201,9 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                     print '**debug new_restrained_itp_filepath:', new_restrained_itp_filepath
                     with open(new_restrained_itp_filepath, 'w') as output_itp_file:
                         # I'll want to use the new molname in the new (restrained) .itp
-                        adjusted_name_line = candidate_restrained_residue_name + ' ' +  list_input_itp_file_lines[name_line_index].split(' ')[1] + '\n'
-                        list_input_itp_file_lines[name_line_index] = adjusted_name_line
+                        old_name_line = list_input_itp_file_lines[name_line_index]
+                        new_name_line = old_name_line.replace(current_residue_name, candidate_restrained_residue_name)
+                        list_input_itp_file_lines[name_line_index] = new_name_line
                         atom_counter = dictionary_residues_to_restrain[current_residue_name][0].n_atoms
 
                         # also: place an appropriate [ position_restraints ] section within the [ moleculetype ] section
