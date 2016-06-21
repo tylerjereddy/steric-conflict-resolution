@@ -269,25 +269,12 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
 
                         output_itp_file.writelines(list_new_itp_file_lines_renamed)
 
-
-
-                            
-
-
-                    
-
-
-
-
-
-            
-
-
         # use topology_data_list as part of the process to generate the new .top file (and perhaps consider cannibilizing the old / input .top file?)
 
         print '**debug: list_new_restrained_itp_files:', list_new_restrained_itp_files
         molecules_section = 0
         molecule_section_written = False
+        list_itps_accounted_for = []
         with open(topology_filepath, 'r') as input_topology:
             print '**debug topology_filepath before adjustment round {round_num}'.format(round_num = round_number), topology_filepath
             topology_filepath = '/'.join(topology_filepath.split('/')[:-1]) + '/adjusted_topology_round_{round_num}.top'.format(round_num = round_number)
@@ -295,11 +282,16 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
             with open(topology_filepath, 'w') as output_topology:
                 for line in input_topology:
                     if '#include' in line:
-                        print '**debug: input_topology include line round {round_num}:'.format(round_num=round_number), line
-                        output_topology.write(line)
+                        if line not in list_itps_accounted_for:
+                            print '**debug: input_topology include line round {round_num}:'.format(round_num=round_number), line
+                            output_topology.write(line)
+                            list_itps_accounted_for.append(line)
                     elif '[ system ]' in line:
                         for restrained_itp_filename in list_new_restrained_itp_files:
-                            output_topology.write('#include ' + '"' + restrained_itp_filename + '"\n')
+                            include_string = '#include ' + '"' + restrained_itp_filename + '"\n'
+                            if include_string not in list_itps_accounted_for:
+                                output_topology.write(include_string)
+                                list_itps_accounted_for.append(include_string)
                         output_topology.write('[ system ]\n')
                     elif '[ molecules ]' in line:
                         output_topology.write(line)
@@ -312,28 +304,6 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                         break
                     else: 
                         output_topology.write(line)
-
-
-                
-                
-                
-
-
-
-
-
-
-
-
-
-
-        
-
-
-
-
-        
-
 
         #we will need to generate an .mdp file for the alchembed simulation
         alchembed_mdp_filename = '{output_path}/alchembed_round_{round_number}.mdp'.format(output_path=output_path, round_number=round_number)
