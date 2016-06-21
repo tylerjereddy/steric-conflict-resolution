@@ -128,7 +128,6 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         # iterate through all the residue types in the system, first writing the restrained and then the unrestrained versions of the residues, all while keeping track of the topological details so that I can write the custom .top file later on as well
         topology_data_list = []
         output_universe = MDAnalysis.Universe()
-        unique_residue_names = set(dictionary_residues_to_restrain.keys() + dictionary_residues_not_restrained.keys())
         ordered_residue_names = [residue.atoms[0].resname for residue in residues]
         residue_names_accounted_for = []
         for residue_name in ordered_residue_names:
