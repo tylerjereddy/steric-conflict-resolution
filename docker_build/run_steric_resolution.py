@@ -61,8 +61,8 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         cumulative_array_per_residue_steric_conflicts = steric_assessment_all_species(round_number)
         num_residues_with_steric_conflicts = np.count_nonzero(cumulative_array_per_residue_steric_conflicts)
         # it may be sensible to apply position restraints to those residues with minimal steric conflicts -- as a first step, identify them
-        indices_residues_minimal_steric_conflicts = np.where(cumulative_array_per_residue_steric_conflicts == cumulative_array_per_residue_steric_conflicts.min())[0]
         print '**debug cumulative_array_per_residue_steric_conflicts:', cumulative_array_per_residue_steric_conflicts
+        indices_residues_minimal_steric_conflicts = np.where(cumulative_array_per_residue_steric_conflicts == cumulative_array_per_residue_steric_conflicts.min())[0]
         print '**debug indices_residues_minimal_steric_conflicts:', indices_residues_minimal_steric_conflicts
         percentage_residues_with_steric_conflicts = (float(num_residues_with_steric_conflicts) / float(cumulative_array_per_residue_steric_conflicts.shape[0])) * 100.
         if percentage_residues_with_steric_conflicts >= percentage_residues_with_steric_conflicts_previous_round and not round_number==1:
@@ -110,6 +110,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
             residue_ag = residue_object.atoms
             dictionary_residues_to_restrain[residue_name].append(residue_ag)
         # so, dictionary_residues_to_restrain should have a data structure like this: {'POPS': [POPS_1_ag, POPS_2_ag], ... }
+        print '**debug: dictionary_residues_to_restrain.keys() upon creation:', dictionary_residues_to_restrain.keys()
 
         # if we're going to write a new universe we'll also need information for the residues that are not to be position restrained (in a format that will allow me to access on a per-residue-type basis, because I'll want to rewrite the coordinates with i.e., POPS-restrained, POPS-unrestrained, DOPE-restrained, DOPE-unrestrained topology configuration)
         total_num_residues = all_selection.n_residues
@@ -122,12 +123,19 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
             residue_ag = residue_object.atoms
             dictionary_residues_not_restrained[residue_name].append(residue_ag)
         # so, dictionary_residues_not_restrained will have a similar data structure to the restrained version
+        print '**debug: dictionary_residues_not_restrained.keys() upon creation:', dictionary_residues_not_restrained.keys()
 
         # iterate through all the residue types in the system, first writing the restrained and then the unrestrained versions of the residues, all while keeping track of the topological details so that I can write the custom .top file later on as well
         topology_data_list = []
         output_universe = MDAnalysis.Universe()
         unique_residue_names = set(dictionary_residues_to_restrain.keys() + dictionary_residues_not_restrained.keys())
-        for residue_name in unique_residue_names:
+        ordered_residue_names = [residue.atoms[0].resname for residue in residues]
+        residue_names_accounted_for = []
+        for residue_name in ordered_residue_names:
+            if residue_name in residue_names_accounted_for:
+                continue
+            else: 
+                residue_names_accounted_for.append(residue_name)
             if residue_name in dictionary_residues_to_restrain.keys():
                 new_restrained_residue_name = 'R' + residue_name[1:] #create a unique residue name for the restrained version of the residue (so that separate .itp may be used, etc.)
                 list_restrained_residue_atomgroups = dictionary_residues_to_restrain[residue_name]
@@ -219,8 +227,16 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                         # identify the indices of the lines between which the [ position_restraints ] information will be spliced in
                         index_counter = 0
                         for line in list_input_itp_file_lines:
-                            if 'moleculetype' in line and list_input_itp_file_lines[index_counter + 2].strip().split()[0] in [candidate_restrained_residue_name, current_residue_name]:
-                                posres_start_index = index_counter + 6 + atom_counter #place posres info below [atom] data
+                            if 'atoms' in line:
+                                atoms_section_start_index = index_counter
+                                break
+                            else:
+                                index_counter += 1
+
+                        index_counter = atoms_section_start_index
+                        for line in list_input_itp_file_lines[atoms_section_start_index:]:
+                            if line == "\n":
+                                posres_start_index = index_counter
                                 break
                             else:
                                 index_counter += 1
@@ -274,11 +290,12 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         molecule_section_written = False
         with open(topology_filepath, 'r') as input_topology:
             print '**debug topology_filepath before adjustment round {round_num}'.format(round_num = round_number), topology_filepath
-            topology_filepath = '/'.join(topology_filepath.split('/')[:-1]) + '/adjusted_topology.top'
+            topology_filepath = '/'.join(topology_filepath.split('/')[:-1]) + '/adjusted_topology_round_{round_num}.top'.format(round_num = round_number)
             print '**debug topology_filepath after adjustment round {round_num}'.format(round_num = round_number), topology_filepath
             with open(topology_filepath, 'w') as output_topology:
                 for line in input_topology:
                     if '#include' in line:
+                        print '**debug: input_topology include line round {round_num}:'.format(round_num=round_number), line
                         output_topology.write(line)
                     elif '[ system ]' in line:
                         for restrained_itp_filename in list_new_restrained_itp_files:
