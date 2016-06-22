@@ -240,7 +240,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                         # identify the indices of the lines between which the [ position_restraints ] information will be spliced in
                         index_counter = 0
                         for line in list_input_itp_file_lines:
-                            if 'atoms' in line:
+                            if 'atoms' in line and line[0] != ';':
                                 atoms_section_start_index = index_counter
                                 break
                             else:
