@@ -103,31 +103,13 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         print '**debug residues:', residues
         residues_to_restrain = residues[indices_residues_minimal_steric_conflicts] # will this work as intended?
         # now, try to rewrite the input coordinate file with restrained and unrestrained residues separated (but might make sense to have the same residue type follow in a restrained / non-restrained topology ordering)
-        # need to access the names of the affected residues in order here?
-        dictionary_residues_to_restrain = collections.defaultdict(list)
-        for residue_object in residues_to_restrain:
-            residue_name = residue_object.name
-            residue_ag = residue_object.atoms
-            dictionary_residues_to_restrain[residue_name].append(residue_ag)
-        # so, dictionary_residues_to_restrain should have a data structure like this: {'POPS': [POPS_1_ag, POPS_2_ag], ... }
-        print '**debug: dictionary_residues_to_restrain.keys() upon creation:', dictionary_residues_to_restrain.keys()
 
         # if we're going to write a new universe we'll also need information for the residues that are not to be position restrained (in a format that will allow me to access on a per-residue-type basis, because I'll want to rewrite the coordinates with i.e., POPS-restrained, POPS-unrestrained, DOPE-restrained, DOPE-unrestrained topology configuration)
         total_num_residues = all_selection.n_residues
         array_all_residue_numbers = np.arange(total_num_residues)
         mask_residues_not_restrained = np.in1d(array_all_residue_numbers, indices_residues_minimal_steric_conflicts, invert=True)
         unrestrained_residues = residues[mask_residues_not_restrained]
-        dictionary_residues_not_restrained = collections.defaultdict(list)
-        for residue_object in unrestrained_residues:
-            residue_name = residue_object.name
-            residue_ag = residue_object.atoms
-            dictionary_residues_not_restrained[residue_name].append(residue_ag)
-        # so, dictionary_residues_not_restrained will have a similar data structure to the restrained version
-        print '**debug: dictionary_residues_not_restrained.keys() upon creation:', dictionary_residues_not_restrained.keys()
 
-        # iterate through all the residue types in the system, first writing the restrained and then the unrestrained versions of the residues, all while keeping track of the topological details so that I can write the custom .top file later on as well
-        topology_data_list = []
-        output_universe = MDAnalysis.Universe()
         ordered_residue_names = [residue.atoms[0].resname for residue in residues]
         if round_number == 1:
             original_residue_names = set(ordered_residue_names)
@@ -136,11 +118,41 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                 restrained_residue_name = 'R' + original_residue_name[1:]
                 dict_residue_name_mappings[restrained_residue_name] = original_residue_name
         else: #reset the residue names
+            print '**debug: len(ordered_residue_names) before adjustment (round: {round_num}):'.format(round_num=round_number), len(ordered_residue_names)
             new_list_residue_names = []
             for residue_name in ordered_residue_names:
                 restrained_version = 'R' + residue_name[1:]
                 new_list_residue_names.append(dict_residue_name_mappings[restrained_version]) #map back unrestrained residue names
             ordered_residue_names = new_list_residue_names[:]
+            print '**debug: len(ordered_residue_names) after adjustment (round: {round_num}):'.format(round_num=round_number), len(ordered_residue_names)
+
+        # need to access the names of the affected residues in order here?
+        dictionary_residues_to_restrain = collections.defaultdict(list)
+        for residue_object in residues_to_restrain:
+            residue_name = residue_object.name
+            if residue_name[0] == 'R': #map back to unrestrained version
+                residue_name = dict_residue_name_mappings[residue_name]
+            residue_ag = residue_object.atoms
+            dictionary_residues_to_restrain[residue_name].append(residue_ag)
+        # so, dictionary_residues_to_restrain should have a data structure like this: {'POPS': [POPS_1_ag, POPS_2_ag], ... }
+        print '**debug: dictionary_residues_to_restrain.keys() upon creation:', dictionary_residues_to_restrain.keys()
+
+        print '**debug: unrestrained_residues:', unrestrained_residues
+        dictionary_residues_not_restrained = collections.defaultdict(list)
+        for residue_object in unrestrained_residues:
+            residue_name = residue_object.name
+            if residue_name[0] == 'R': #map back to unrestrained version
+                residue_name = dict_residue_name_mappings[residue_name]
+            residue_ag = residue_object.atoms
+            residue_ag.set_resnames(residue_name)
+            dictionary_residues_not_restrained[residue_name].append(residue_ag)
+        # so, dictionary_residues_not_restrained will have a similar data structure to the restrained version
+        print '**debug: dictionary_residues_not_restrained.keys() upon creation:', dictionary_residues_not_restrained.keys()
+        print '**debug: dictionary_residues_not_restrained upon creation:', dictionary_residues_not_restrained
+
+        # iterate through all the residue types in the system, first writing the restrained and then the unrestrained versions of the residues, all while keeping track of the topological details so that I can write the custom .top file later on as well
+        topology_data_list = []
+        output_universe = MDAnalysis.Universe()
 
         residue_names_accounted_for = []
         for residue_name in ordered_residue_names:
@@ -152,6 +164,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
             if residue_name in dictionary_residues_to_restrain.keys():
                 new_restrained_residue_name = 'R' + residue_name[1:] #create a unique residue name for the restrained version of the residue (so that separate .itp may be used, etc.)
                 list_restrained_residue_atomgroups = dictionary_residues_to_restrain[residue_name]
+                print '**debug: list_restrained_residue_atomgroups:', list_restrained_residue_atomgroups
                 for ag in list_restrained_residue_atomgroups:
                     ag.set_resnames(new_restrained_residue_name)
                 if output_universe.select_atoms('all').n_atoms == 0:
@@ -160,6 +173,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                     output_universe = MDAnalysis.Merge(output_universe.atoms, *list_restrained_residue_atomgroups)
                 output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
                 topology_data_list.append((new_restrained_residue_name, len(list_restrained_residue_atomgroups)))
+                print '**debug: (residue_name, len(dictionary_residues_not_restrained[residue_name])):', (residue_name, len(dictionary_residues_not_restrained[residue_name]))
                 topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name])))
             else: #just merge in the unrestrained residues if there are no restrained targets for this residue type
                 if output_universe.select_atoms('all').n_atoms == 0:
@@ -167,6 +181,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                 else:
                     output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
                 topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name])))
+            print '**debug: residue_names_accounted_for:', residue_names_accounted_for
         print '**debug: topology_data_list:', topology_data_list
 
         # write the new input data to a coord file
