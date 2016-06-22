@@ -129,8 +129,22 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         topology_data_list = []
         output_universe = MDAnalysis.Universe()
         ordered_residue_names = [residue.atoms[0].resname for residue in residues]
+        if round_number == 1:
+            original_residue_names = set(ordered_residue_names)
+            dict_residue_name_mappings = {}
+            for original_residue_name in original_residue_names:
+                restrained_residue_name = 'R' + original_residue_name[1:]
+                dict_residue_name_mappings[restrained_residue_name] = original_residue_name
+        else: #reset the residue names
+            new_list_residue_names = []
+            for residue_name in ordered_residue_names:
+                restrained_version = 'R' + residue_name[1:]
+                new_list_residue_names.append(dict_residue_name_mappings[restrained_version]) #map back unrestrained residue names
+            ordered_residue_names = new_list_residue_names[:]
+
         residue_names_accounted_for = []
         for residue_name in ordered_residue_names:
+            print '**debug: residue_name being considered:', residue_name
             if residue_name in residue_names_accounted_for:
                 continue
             else: 
