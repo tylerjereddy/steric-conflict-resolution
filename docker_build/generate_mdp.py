@@ -7,7 +7,7 @@ def generate_mdp(resolution='CG', output_filename = 'alchembed.mdp', b = 2, step
     delta_lambda defaults to 0.001'''
     if resolution == 'CG': #Coarse Grained system
         mdp_lines =      collections.OrderedDict([('integrator' , 'md'),
-                        ('define'               , '-DPOSRES'),
+                        ('define'               , '-DFLEXIBLE'),
                         ('tinit'                , '0.0'),
                         ('dt'                   , '0.01'),
                         ('nsteps'               , '1000'),
