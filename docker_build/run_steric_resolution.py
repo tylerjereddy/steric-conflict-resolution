@@ -61,9 +61,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         cumulative_array_per_residue_steric_conflicts = steric_assessment_all_species(round_number)
         num_residues_with_steric_conflicts = np.count_nonzero(cumulative_array_per_residue_steric_conflicts)
         # it may be sensible to apply position restraints to those residues with minimal steric conflicts -- as a first step, identify them
-        print '**debug cumulative_array_per_residue_steric_conflicts:', cumulative_array_per_residue_steric_conflicts
         indices_residues_minimal_steric_conflicts = np.where(cumulative_array_per_residue_steric_conflicts == cumulative_array_per_residue_steric_conflicts.min())[0]
-        print '**debug indices_residues_minimal_steric_conflicts:', indices_residues_minimal_steric_conflicts
         percentage_residues_with_steric_conflicts = (float(num_residues_with_steric_conflicts) / float(cumulative_array_per_residue_steric_conflicts.shape[0])) * 100.
         if percentage_residues_with_steric_conflicts >= percentage_residues_with_steric_conflicts_previous_round and not round_number==1:
             consecutive_rounds_without_improvement += 1
@@ -96,11 +94,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         # can probably use MDAnalysis to perform the necessary operations on indexed residue objects
         u = MDAnalysis.Universe(input_coord_file)
         all_selection = u.select_atoms('all')
-        print '**debug all_selection:', all_selection
-        print '**debug all_selection.n_atoms:', all_selection.n_atoms
         residues = all_selection.residues
-        print '**debug len(residues):', len(residues)
-        print '**debug residues:', residues
         residues_to_restrain = residues[indices_residues_minimal_steric_conflicts] # will this work as intended?
         # now, try to rewrite the input coordinate file with restrained and unrestrained residues separated (but might make sense to have the same residue type follow in a restrained / non-restrained topology ordering)
 
@@ -118,13 +112,11 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                 restrained_residue_name = 'R' + original_residue_name[1:]
                 dict_residue_name_mappings[restrained_residue_name] = original_residue_name
         else: #reset the residue names
-            print '**debug: len(ordered_residue_names) before adjustment (round: {round_num}):'.format(round_num=round_number), len(ordered_residue_names)
             new_list_residue_names = []
             for residue_name in ordered_residue_names:
                 restrained_version = 'R' + residue_name[1:]
                 new_list_residue_names.append(dict_residue_name_mappings[restrained_version]) #map back unrestrained residue names
             ordered_residue_names = new_list_residue_names[:]
-            print '**debug: len(ordered_residue_names) after adjustment (round: {round_num}):'.format(round_num=round_number), len(ordered_residue_names)
 
         # need to access the names of the affected residues in order here?
         dictionary_residues_to_restrain = collections.defaultdict(list)
@@ -135,9 +127,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
             residue_ag = residue_object.atoms
             dictionary_residues_to_restrain[residue_name].append(residue_ag)
         # so, dictionary_residues_to_restrain should have a data structure like this: {'POPS': [POPS_1_ag, POPS_2_ag], ... }
-        print '**debug: dictionary_residues_to_restrain.keys() upon creation:', dictionary_residues_to_restrain.keys()
 
-        print '**debug: unrestrained_residues:', unrestrained_residues
         dictionary_residues_not_restrained = collections.defaultdict(list)
         for residue_object in unrestrained_residues:
             residue_name = residue_object.name
@@ -147,8 +137,6 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
             residue_ag.set_resnames(residue_name)
             dictionary_residues_not_restrained[residue_name].append(residue_ag)
         # so, dictionary_residues_not_restrained will have a similar data structure to the restrained version
-        print '**debug: dictionary_residues_not_restrained.keys() upon creation:', dictionary_residues_not_restrained.keys()
-        print '**debug: dictionary_residues_not_restrained upon creation:', dictionary_residues_not_restrained
 
         # iterate through all the residue types in the system, first writing the restrained and then the unrestrained versions of the residues, all while keeping track of the topological details so that I can write the custom .top file later on as well
         topology_data_list = []
@@ -156,7 +144,6 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
 
         residue_names_accounted_for = []
         for residue_name in ordered_residue_names:
-            print '**debug: residue_name being considered:', residue_name
             if residue_name in residue_names_accounted_for:
                 continue
             else: 
@@ -164,7 +151,6 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
             if residue_name in dictionary_residues_to_restrain.keys():
                 new_restrained_residue_name = 'R' + residue_name[1:] #create a unique residue name for the restrained version of the residue (so that separate .itp may be used, etc.)
                 list_restrained_residue_atomgroups = dictionary_residues_to_restrain[residue_name]
-                print '**debug: list_restrained_residue_atomgroups:', list_restrained_residue_atomgroups
                 for ag in list_restrained_residue_atomgroups:
                     ag.set_resnames(new_restrained_residue_name)
                 if output_universe.select_atoms('all').n_atoms == 0:
@@ -173,7 +159,6 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                     output_universe = MDAnalysis.Merge(output_universe.atoms, *list_restrained_residue_atomgroups)
                 output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
                 topology_data_list.append((new_restrained_residue_name, len(list_restrained_residue_atomgroups)))
-                print '**debug: (residue_name, len(dictionary_residues_not_restrained[residue_name])):', (residue_name, len(dictionary_residues_not_restrained[residue_name]))
                 topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name])))
             else: #just merge in the unrestrained residues if there are no restrained targets for this residue type
                 if output_universe.select_atoms('all').n_atoms == 0:
@@ -181,8 +166,6 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                 else:
                     output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
                 topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name])))
-            print '**debug: residue_names_accounted_for:', residue_names_accounted_for
-        print '**debug: topology_data_list:', topology_data_list
 
         # write the new input data to a coord file
         forcefield_parent_filepath = '/'.join(topology_filepath.split('/')[:-1]) + '/' # remove the .top file name to obtain the parent path for the input .itp files
@@ -190,7 +173,6 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         output_universe.atoms.write(adjusted_coords)
         #adjust the box vectors (which get set to 0 for whatever reason)
         subprocess.call(['/bin/bash','-i','-c','gmx editconf -f {coord_path} -o {coord_path} -box 100.0 100.0 100.0'.format(coord_path=adjusted_coords)])
-        print '**debug: adjusted_coords', adjusted_coords
         input_coord_file = adjusted_coords #use the new coord file as the algorithm input
 
         # up next, need to deal with writing new .top and .itp files in preparation for the selective application of position restraints
@@ -207,7 +189,6 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
 
         # now, try to generate the new .itp files that are needed for application of position restraints (will probably always want to keep copies of the old .itp files as well as we'll likely often have a number of residues that are to remain unrestrained)
         residue_names_to_restrain = dictionary_residues_to_restrain.keys()
-        print '**debug residue_names_to_restrain:', residue_names_to_restrain
         list_new_restrained_itp_files = []
         for input_itp_filepath in list_input_itp_filepaths:
             if 'restrained' in input_itp_filepath:
@@ -226,19 +207,14 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                         index_counter += 1
                 if residue_found == 0:
                     continue
-                print '**debug list_input_itp_file_lines[name_line_index].strip().split(' '):', list_input_itp_file_lines[name_line_index].strip().split(' ')
                 current_residue_name = list_input_itp_file_lines[name_line_index].strip().split(' ')[0]
-                print '**debug current_residue_name:', current_residue_name
                 candidate_restrained_residue_name = 'R' + current_residue_name[1:]
-                print '**debug candidate_restrained_residue_name:', candidate_restrained_residue_name
                 if candidate_restrained_residue_name in residue_names_to_restrain or current_residue_name in residue_names_to_restrain:
                     #need to generate a special 'restrained' .itp file (will modify the list_input_itp_file_lines)
                     current_itp_filename = input_itp_filepath.split('/')[-1]
                     new_restrained_itp_filename = ''.join(current_itp_filename.split('.')[:-1]) + '_restrained.itp'
-                    print '**debug new_restrained_itp_filename:', new_restrained_itp_filename
                     list_new_restrained_itp_files.append(new_restrained_itp_filename)
                     new_restrained_itp_filepath = '/'.join(input_itp_filepath.split('/')[:-1]) + '/' + new_restrained_itp_filename
-                    print '**debug new_restrained_itp_filepath:', new_restrained_itp_filepath
                     with open(new_restrained_itp_filepath, 'w') as output_itp_file:
                         # I'll want to use the new molname in the new (restrained) .itp
                         old_name_line = list_input_itp_file_lines[name_line_index]
@@ -294,19 +270,15 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
 
         # use topology_data_list as part of the process to generate the new .top file (and perhaps consider cannibilizing the old / input .top file?)
 
-        print '**debug: list_new_restrained_itp_files:', list_new_restrained_itp_files
         molecules_section = 0
         molecule_section_written = False
         list_itps_accounted_for = []
         with open(topology_filepath, 'r') as input_topology:
-            print '**debug topology_filepath before adjustment round {round_num}'.format(round_num = round_number), topology_filepath
             topology_filepath = '/'.join(topology_filepath.split('/')[:-1]) + '/adjusted_topology_round_{round_num}.top'.format(round_num = round_number)
-            print '**debug topology_filepath after adjustment round {round_num}'.format(round_num = round_number), topology_filepath
             with open(topology_filepath, 'w') as output_topology:
                 for line in input_topology:
                     if '#include' in line:
                         if line not in list_itps_accounted_for:
-                            print '**debug: input_topology include line round {round_num}:'.format(round_num=round_number), line
                             output_topology.write(line)
                             list_itps_accounted_for.append(line)
                     elif '[ system ]' in line:
@@ -346,8 +318,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         #generate alchembed tpr file
         tpr_filename = alchembed_mdp_filename.replace('mdp','tpr')
         with open(topology_filepath, 'r') as top_file_used:
-            print '**debug -- printing out topology file used (before calling grompp in round {round_num}):'.format(round_num = round_number), top_file_used.readlines()
-        subprocess.call(['/bin/bash','-i','-c','gmx grompp -f {mdp_file} -c {input_coords_current_round} -p {top_file} -o {tpr_filename} -maxwarn 99'.format(mdp_file=alchembed_mdp_filename, input_coords_current_round=input_coord_file, top_file=topology_filepath, tpr_filename=tpr_filename)])
+            subprocess.call(['/bin/bash','-i','-c','gmx grompp -f {mdp_file} -c {input_coords_current_round} -p {top_file} -o {tpr_filename} -maxwarn 99'.format(mdp_file=alchembed_mdp_filename, input_coords_current_round=input_coord_file, top_file=topology_filepath, tpr_filename=tpr_filename)])
 
         #run the alchembed 'simulation' on a single core
         print 'starting alchembed simulation for round ', round_number
