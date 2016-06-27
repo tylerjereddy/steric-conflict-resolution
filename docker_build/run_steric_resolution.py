@@ -189,13 +189,8 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         adjusted_coords = forcefield_parent_filepath + 'adjusted_coords.gro'
         output_universe.atoms.write(adjusted_coords)
         #adjust the box vectors (which get set to 0 for whatever reason)
+        subprocess.call(['/bin/bash','-i','-c','gmx editconf -f {coord_path} -o {coord_path} -box 100.0 100.0 100.0'.format(coord_path=adjusted_coords)])
         print '**debug: adjusted_coords', adjusted_coords
-        with open(adjusted_coords, 'r') as input_file:
-            list_gro_lines = input_file.readlines()
-            new_list_gro_lines = list_gro_lines[:-1]
-            new_list_gro_lines.append(' 100.00000 100.00000 100.00000\n')
-        with open(adjusted_coords, 'w') as output_file:
-            output_file.writelines(new_list_gro_lines)
         input_coord_file = adjusted_coords #use the new coord file as the algorithm input
 
         # up next, need to deal with writing new .top and .itp files in preparation for the selective application of position restraints
