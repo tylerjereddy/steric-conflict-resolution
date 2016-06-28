@@ -1,5 +1,6 @@
 '''This script runs the iterative procedure that follows the workflow: steric assessment - alchembed - steric assessment, etc.'''
 
+import glob
 import argparse
 import time
 import sys
@@ -12,6 +13,18 @@ import MDAnalysis
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot
+import os
+
+def cleanup_files(output_path):
+    for filepath in glob.glob(output_path + '/*'):
+        if 'alchembed_round' in filepath and not 'gro' in filepath:
+            os.remove(filepath)
+        elif filepath.split('/')[-1] in ['steric_viols.p', 'steric_histogram.png']:
+            os.remove(filepath)
+
+    for filepath in glob.glob('/'.join(output_path.split('/')[:-1]) + '/*'):
+        if 'adjusted' in filepath or 'restrained' in filepath:
+            os.remove(filepath)
 
 def plot_cumulative_steric_conflicts(cumulative_conflicts_array, outfile, cutoff):
     fig = matplotlib.pyplot.figure()
@@ -51,6 +64,9 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         sys.exit('The list_particles_per_residue should be half as long as the index_list as the latter contains start & end indices for each residue.')
 
     round_number = 1
+
+    output_path = output_path + '/results'
+    os.mkdir(output_path)
 
     def steric_assessment_all_species(round_number):
         '''Run the steric assessment for all specified residues / species. Should return the pickled aggregate numpy array data for steric violations across all residues.
@@ -98,11 +114,13 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         #if all steric conflicts have been resolved, exit the while loop
         if percentage_residues_with_steric_conflicts == 0:
             print 'All steric conflicts for the input residues have been resolved -- exiting loop.'
+            cleanup_files(output_path)
             break
 
         #likewise, exit the while loop if two consecutive rounds have failed to improve the steric situation
         if consecutive_rounds_without_improvement == 20:
             print 'Exiting loop because 20 consecutive steric conflict resolution rounds have failed to improve the situation.'
+            cleanup_files(output_path)
             break
 
         #if there may still be something to gain with another round of alchembed, run it based on user-specified parameters
@@ -347,6 +365,8 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
             input_coord_file = output_deffnm + '.gro' # set coord file for next round
         else: #mdrun crashed for whatever reason, so the input file remains the same in the next round...
             pass
+
+
         print 'finished alchembed simulation for round ', round_number
         round_number += 1
 
