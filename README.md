@@ -19,6 +19,9 @@ martini_v2.1.itp
 sys.top
 dppc_simple_copies.gro
 ```
+The initial coordinates (`dppc_simple_copies.gro`) clearly show the two DPPC molecules on top of each other (indistinguishable): 
+
+![DPPC before](images/dppc_before.png)  
 
 The steric conflict resolution code could then be initiated using a command similar to the following in bash (redirecting the output to a log file just in case):
 ```
@@ -28,3 +31,18 @@ docker run -v /path/to/working_dir/:/steric_conflict_resolution_work tylerreddy/
 This above command should mount the contents of `/path/to/working_dir/` into the docker image at the appropriate location, run the steric resolution code, and place the output files in the `results/` subfolder of the working directory on your machine.
 
 As you can see, the two DPPC lipids in the output coordinates have separated from each other by at least 2.0 A:
+![DPPC after](images/dppc_after.png) 
+
+Furthermore, after each iteration a summary plot of the steric conflict situation is automatically produced (though formatting could be improved):
+
+##Round 1 -- Multiple steric conflicts for the two superposed residues
+
+![round 1](images/cumulative_per_residue_steric_conflicts_round_1.png) 
+
+##Round 2 -- Steric conflicts have been completely resolved
+
+![round 2](images/cumulative_per_residue_steric_conflicts_round_2.png) 
+
+Clearly, all steric conflicts within the specified cutoff have been resolved. The raw data is also made available (as Python pickle files) if you wish to produce custom plots, etc.
+
+Although this particular example is fairly crude, the idea is that you may scale up to much larger systems that experience issues with steric conflicts that prevent a direct entry into conventional energy minimization procedures.
