@@ -9,6 +9,24 @@ import numpy as np
 import generate_mdp
 import collections
 import MDAnalysis
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot
+
+def plot_cumulative_steric_conflicts(cumulative_conflicts_array, outfile, cutoff):
+    fig = matplotlib.pyplot.figure()
+    ax = fig.add_subplot(111)
+    matplotlib.pyplot.xticks(rotation=0)
+    unique_contact_counts, num_residues_with_those_counts = np.unique(cumulative_conflicts_array, return_counts=True)
+    percent_denominator = cumulative_conflicts_array.size / 100.0
+    ax.bar(unique_contact_counts, num_residues_with_those_counts / percent_denominator,facecolor = 'green',alpha=0.75,width=0.7, align='center', log = True) #percent histogram
+    ax.set_xlim(-1, unique_contact_counts.max() + 1)
+    ax.set_xticks(np.arange(-1,unique_contact_counts.max() + 2))
+    ax.set_xlabel('# of contacts within {cutoff} $\AA$'.format(cutoff=cutoff))
+    ax.set_ylabel('log(%) of residues')
+    fig.set_size_inches(6,6)
+    fig.subplots_adjust(bottom=0.2, left=0.2)
+    fig.savefig(outfile,dpi=300)
 
 def parse_args(args):
     parser = argparse.ArgumentParser()
@@ -51,6 +69,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
             current_residue_species_index += 2
         #the full steric assessment across all residue types in the current round has completed -- so write the cumulative array of per-residue steric conflict counts to a round number-tagged pickle file and return the array proper
         pickle.dump(cumulative_array_per_residue_steric_conflicts, open('{output_path}/cumulative_array_per_residue_steric_conflicts_round_{round_number}.p'.format(round_number = round_number, output_path=output_path),'wb'))
+        plot_cumulative_steric_conflicts(cumulative_array_per_residue_steric_conflicts, '{output_path}/cumulative_per_residue_steric_conflicts_round_{round_number}.png'.format(output_path=output_path, round_number=round_number), cutoff = cutoff)
         return cumulative_array_per_residue_steric_conflicts
         
     percentage_residues_with_steric_conflicts_previous_round = 100
