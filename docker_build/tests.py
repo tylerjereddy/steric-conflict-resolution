@@ -30,7 +30,7 @@ class TestSimpleCopiesDPPC(unittest.TestCase):
         os.mkdir('/steric_conflict_resolution_work/dppc_simple_test') #probably don't need a proper temporary object for now because only running on travis where it will get wiped anyway
         run_steric_resolution.run_steric_resolution_loop(input_coord_file = '/steric_conflict_resolution_work/test_data/dppc_simple_copies/dppc_simple_copies.gro', index_list = [1, 24], residue_names_list = ['DPPC'], cutoff = 2.0, list_particles_per_residue = [12], output_path = '/steric_conflict_resolution_work/dppc_simple_test', topology_filepath = '/steric_conflict_resolution_work/test_data/dppc_simple_copies/sys.top')
         list_steric_conflicts_by_round = []
-        for steric_conflict_pickle_file in glob.glob('/steric_conflict_resolution_work/dppc_simple_test/cumulative_array_per_residue_steric_conflicts_round_*.p'):
+        for steric_conflict_pickle_file in glob.glob('/steric_conflict_resolution_work/dppc_simple_test/results/cumulative_array_per_residue_steric_conflicts_round_*.p'):
             steric_conflict_data_array = pickle.load(open(steric_conflict_pickle_file, 'rb'))
             num_residues_with_steric_conflicts = np.count_nonzero(steric_conflict_data_array)
             list_steric_conflicts_by_round.append(num_residues_with_steric_conflicts)
@@ -41,7 +41,7 @@ class TestSimpleCopiesDPPC(unittest.TestCase):
         '''Test resolution of steric conflicts for simple DPPC test case when run_steric_resolution.py is called via the command line (invoking argparse code).'''
         subprocess.call("python /steric_conflict_resolution/run_steric_resolution.py -input_coord_file_path /steric_conflict_resolution_work/test_data/dppc_simple_copies/dppc_simple_copies.gro -index_list 1 24 -residue_names_list DPPC -cutoff 2.0 -list_particles_per_residue 12 -output_path /steric_conflict_resolution_work/dppc_simple_test_argparse -topology_filepath /steric_conflict_resolution_work/test_data/dppc_simple_copies/sys.top", shell=True)
         list_steric_conflicts_by_round = []
-        for steric_conflict_pickle_file in glob.glob('/steric_conflict_resolution_work/dppc_simple_test_argparse/cumulative_array_per_residue_steric_conflicts_round_*.p'):
+        for steric_conflict_pickle_file in glob.glob('/steric_conflict_resolution_work/dppc_simple_test_argparse/results/cumulative_array_per_residue_steric_conflicts_round_*.p'):
             steric_conflict_data_array = pickle.load(open(steric_conflict_pickle_file, 'rb'))
             num_residues_with_steric_conflicts = np.count_nonzero(steric_conflict_data_array)
             list_steric_conflicts_by_round.append(num_residues_with_steric_conflicts)
@@ -54,7 +54,7 @@ class TestMultipleCopiesDPPC(unittest.TestCase):
         os.mkdir('/steric_conflict_resolution_work/dppc_large_test') #probably don't need a proper temporary object for now because only running on travis where it will get wiped anyway
         run_steric_resolution.run_steric_resolution_loop(input_coord_file = '/steric_conflict_resolution_work/test_data/dppc_many_copies/dppc_many_copies.gro', index_list = [1, 240], residue_names_list = ['DPPC'], cutoff = 2.0, list_particles_per_residue = [12], output_path = '/steric_conflict_resolution_work/dppc_large_test', topology_filepath = '/steric_conflict_resolution_work/test_data/dppc_many_copies/sys.top')
         list_steric_conflicts_by_round = []
-        for steric_conflict_pickle_file in glob.glob('/steric_conflict_resolution_work/dppc_large_test/cumulative_array_per_residue_steric_conflicts_round_*.p'):
+        for steric_conflict_pickle_file in glob.glob('/steric_conflict_resolution_work/dppc_large_test/results/cumulative_array_per_residue_steric_conflicts_round_*.p'):
             steric_conflict_data_array = pickle.load(open(steric_conflict_pickle_file, 'rb'))
             num_residues_with_steric_conflicts = np.count_nonzero(steric_conflict_data_array)
             list_steric_conflicts_by_round.append(num_residues_with_steric_conflicts)
@@ -65,7 +65,7 @@ class TestMultipleCopiesDPPC(unittest.TestCase):
         '''Test resolution of steric conflicts for simple DPPC test case when run_steric_resolution.py is called via the command line (invoking argparse code).'''
         subprocess.call("python /steric_conflict_resolution/run_steric_resolution.py -input_coord_file_path /steric_conflict_resolution_work/test_data/dppc_many_copies/dppc_many_copies.gro -index_list 1 240 -residue_names_list DPPC -cutoff 2.0 -list_particles_per_residue 12 -output_path /steric_conflict_resolution_work/dppc_large_test_argparse -topology_filepath /steric_conflict_resolution_work/test_data/dppc_many_copies/sys.top", shell=True)
         list_steric_conflicts_by_round = []
-        for steric_conflict_pickle_file in glob.glob('/steric_conflict_resolution_work/dppc_large_test_argparse/cumulative_array_per_residue_steric_conflicts_round_*.p'):
+        for steric_conflict_pickle_file in glob.glob('/steric_conflict_resolution_work/dppc_large_test_argparse/results/cumulative_array_per_residue_steric_conflicts_round_*.p'):
             steric_conflict_data_array = pickle.load(open(steric_conflict_pickle_file, 'rb'))
             num_residues_with_steric_conflicts = np.count_nonzero(steric_conflict_data_array)
             list_steric_conflicts_by_round.append(num_residues_with_steric_conflicts)
@@ -91,7 +91,7 @@ class TestMultipleResiduesCG(unittest.TestCase):
         os.mkdir('/steric_conflict_resolution_work/multi_residue_cg_test') #probably don't need a proper temporary object for now because only running on travis where it will get wiped anyway
         run_steric_resolution.run_steric_resolution_loop(input_coord_file = '/steric_conflict_resolution_work/test_data/multiple_lipids_MARTINI/multiple_MARTINI_residues_steric_conflicts.gro', index_list = [1, 60, 61, 130, 131, 250, 251, 325], residue_names_list = ['DOPC', 'PRPC', 'XNG3', 'XNSM'], cutoff = 2.0, list_particles_per_residue = [12, 14, 24, 15], output_path = '/steric_conflict_resolution_work/multi_residue_cg_test', topology_filepath = '/steric_conflict_resolution_work/test_data/multiple_lipids_MARTINI/sys.top')
         list_steric_conflicts_by_round = []
-        for steric_conflict_pickle_file in glob.glob('/steric_conflict_resolution_work/multi_residue_cg_test/cumulative_array_per_residue_steric_conflicts_round_*.p'):
+        for steric_conflict_pickle_file in glob.glob('/steric_conflict_resolution_work/multi_residue_cg_test/results/cumulative_array_per_residue_steric_conflicts_round_*.p'):
             steric_conflict_data_array = pickle.load(open(steric_conflict_pickle_file, 'rb'))
             num_residues_with_steric_conflicts = np.count_nonzero(steric_conflict_data_array)
             list_steric_conflicts_by_round.append(num_residues_with_steric_conflicts)
