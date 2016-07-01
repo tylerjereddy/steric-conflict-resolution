@@ -55,9 +55,10 @@ def parse_args(args):
     parser.add_argument("-alchembed_alpha", type=float, default = 0.1)  
     parser.add_argument("-alchembed_dt", type=float, default = 0.01)  
     parser.add_argument("-topology_filepath", type=str) # for GROMACS .top file
+    parser.add_argument("-tpr_filepath", type=str, default = None) # for GROMACS .tpr file
     return parser.parse_args(args)
 
-def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list, cutoff, list_particles_per_residue, output_path, topology_filepath, alchembed_b_value = 2, alchembed_resolution = 'CG', alchembed_steps = 1000, alchembed_alpha = 0.1, alchembed_dt = 0.01):
+def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list, cutoff, list_particles_per_residue, output_path, topology_filepath, alchembed_b_value = 2, alchembed_resolution = 'CG', alchembed_steps = 1000, alchembed_alpha = 0.1, alchembed_dt = 0.01, tpr_filepath = None):
     if not len(residue_names_list) == int(len(index_list) / 2.):
         sys.exit('The residue_names_list should be half as long as the index_list as the latter contains start & end indices for each residue.')
     if not len(list_particles_per_residue) == int(len(index_list) / 2.):
@@ -129,7 +130,10 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
 
         # assuming that we actually have some 'minimum steric conflict' residues, what is the best way to separate them out from the others and re-write the coordinates/ topology / etc?
         # can probably use MDAnalysis to perform the necessary operations on indexed residue objects
-        u = MDAnalysis.Universe(input_coord_file)
+        if tpr_filepath is not None:
+            u = MDAnalysis.Universe(tpr_filepath, input_coord_file)
+        else:
+            u = MDAnalysis.Universe(input_coord_file)
         all_selection = u.select_atoms('all')
         residues = all_selection.residues
         residues_to_restrain = residues[indices_residues_minimal_steric_conflicts] # will this work as intended?
@@ -372,5 +376,5 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
 
 if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
-    run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, index_list = args.index_list, residue_names_list = args.residue_names_list, cutoff = args.cutoff, list_particles_per_residue = args.list_particles_per_residue, output_path = args.output_path, alchembed_b_value = args.alchembed_b_value, alchembed_resolution = args.alchembed_resolution, alchembed_steps = args.alchembed_steps, alchembed_alpha = args.alchembed_alpha, alchembed_dt = args.alchembed_dt, topology_filepath = args.topology_filepath)
+    run_steric_resolution_loop(input_coord_file = args.input_coord_file_path, index_list = args.index_list, residue_names_list = args.residue_names_list, cutoff = args.cutoff, list_particles_per_residue = args.list_particles_per_residue, output_path = args.output_path, alchembed_b_value = args.alchembed_b_value, alchembed_resolution = args.alchembed_resolution, alchembed_steps = args.alchembed_steps, alchembed_alpha = args.alchembed_alpha, alchembed_dt = args.alchembed_dt, topology_filepath = args.topology_filepath, tpr_filepath = args.tpr_filepath)
 

@@ -97,5 +97,17 @@ class TestMultipleResiduesCG(unittest.TestCase):
             list_steric_conflicts_by_round.append(num_residues_with_steric_conflicts)
         self.assertEqual(min(list_steric_conflicts_by_round), 0, "The multiple_MARTINI_residues_steric_conflicts.gro file should have all steric conflicts resolved by the last round of steric resolution.")
 
+class TestRedundantCopiesDPPC_tpr_support(unittest.TestCase):
+    '''Test that the docker image can completely resolve steric conflicts in the case of two superposed DPPC molecules with the SAME residue numbers (requires .tpr reading support to pass).'''
+
+    def test_resolution_steric_conflicts(self):
+        os.mkdir('/steric_conflict_resolution_work/dppc_redundant_test') #probably don't need a proper temporary object for now because only running on travis where it will get wiped anyway
+        run_steric_resolution.run_steric_resolution_loop(input_coord_file = '/steric_conflict_resolution_work/test_data/dppc_redundant_copies/dppc_redundant_copies.gro', index_list = [1, 24], residue_names_list = ['DPPC'], cutoff = 2.0, list_particles_per_residue = [12], output_path = '/steric_conflict_resolution_work/dppc_redundant_test', topology_filepath = '/steric_conflict_resolution_work/test_data/dppc_redundant_copies/sys.top', tpr_filepath = '/steric_conflict_resolution_work/test_data/dppc_redundant_copies/topol.tpr')
+        list_steric_conflicts_by_round = []
+        for steric_conflict_pickle_file in glob.glob('/steric_conflict_resolution_work/dppc_redundant_test/results/cumulative_array_per_residue_steric_conflicts_round_*.p'):
+            steric_conflict_data_array = pickle.load(open(steric_conflict_pickle_file, 'rb'))
+            num_residues_with_steric_conflicts = np.count_nonzero(steric_conflict_data_array)
+            list_steric_conflicts_by_round.append(num_residues_with_steric_conflicts)
+        self.assertEqual(min(list_steric_conflicts_by_round), 0, "The dppc_redundant_copies.gro file should have all steric conflicts resolved by the last round of steric resolution.")
         
 
