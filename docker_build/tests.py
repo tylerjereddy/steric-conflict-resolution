@@ -111,3 +111,15 @@ class TestRedundantCopiesDPPC_tpr_support(unittest.TestCase):
         self.assertEqual(min(list_steric_conflicts_by_round), 0, "The dppc_redundant_copies.gro file should have all steric conflicts resolved by the last round of steric resolution.")
         
 
+class TestRedundantRestrainedResidueNames(unittest.TestCase):
+    '''Testing cases where the RXXX restrained residue names are the same -- which would normally causes issues in the topology unless handled properly by the steric conflict resolution code.'''
+
+    def test_resolution_steric_conflicts(self):
+        os.mkdir('/steric_conflict_resolution_work/dopc_popc_naming_redundancy') #probably don't need a proper temporary object for now because only running on travis where it will get wiped anyway
+        run_steric_resolution.run_steric_resolution_loop(input_coord_file = '/steric_conflict_resolution_work/test_data/dopc_popc_naming_redundancy/dopc_popc.gro', index_list = [1, 24, 25, 48], residue_names_list = ['DOPC', 'POPC'], cutoff = 2.0, list_particles_per_residue = [12, 12], output_path = '/steric_conflict_resolution_work/dopc_popc_naming_redundancy', topology_filepath = '/steric_conflict_resolution_work/test_data/dopc_popc_naming_redundancy/sys.top')
+        list_steric_conflicts_by_round = []
+        for steric_conflict_pickle_file in glob.glob('/steric_conflict_resolution_work/dopc_popc_naming_redundancy/results/cumulative_array_per_residue_steric_conflicts_round_*.p'):
+            steric_conflict_data_array = pickle.load(open(steric_conflict_pickle_file, 'rb'))
+            num_residues_with_steric_conflicts = np.count_nonzero(steric_conflict_data_array)
+            list_steric_conflicts_by_round.append(num_residues_with_steric_conflicts)
+        self.assertEqual(min(list_steric_conflicts_by_round), 0, "The dopc_popc.gro file should have all steric conflicts resolved by the last round of steric resolution.")
