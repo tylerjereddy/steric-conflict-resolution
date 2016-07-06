@@ -181,6 +181,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
 
         # iterate through all the residue types in the system, first writing the restrained and then the unrestrained versions of the residues, all while keeping track of the topological details so that I can write the custom .top file later on as well
         topology_data_list = []
+        list_restrained_residue_names = []
         output_universe = MDAnalysis.Universe()
 
         residue_names_accounted_for = []
@@ -191,6 +192,9 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                 residue_names_accounted_for.append(residue_name)
             if residue_name in dictionary_residues_to_restrain.keys():
                 new_restrained_residue_name = 'R' + residue_name[1:] #create a unique residue name for the restrained version of the residue (so that separate .itp may be used, etc.)
+                if new_restrained_residue_name in list_restrained_residue_names: #in special cases like DOPC and POPC
+                    new_restrained_residue_name = 'Z' + new_restrained_residue_name[1:]
+                list_restrained_residue_names.append(new_restrained_residue_name)
                 list_restrained_residue_atomgroups = dictionary_residues_to_restrain[residue_name]
                 for ag in list_restrained_residue_atomgroups:
                     ag.set_resnames(new_restrained_residue_name)
@@ -231,6 +235,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         # now, try to generate the new .itp files that are needed for application of position restraints (will probably always want to keep copies of the old .itp files as well as we'll likely often have a number of residues that are to remain unrestrained)
         residue_names_to_restrain = dictionary_residues_to_restrain.keys()
         list_new_restrained_itp_files = []
+        candidate_restrained_residue_names_used = []
         for input_itp_filepath in list_input_itp_filepaths:
             if 'restrained' in input_itp_filepath:
                 continue
@@ -250,6 +255,9 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                     continue
                 current_residue_name = list_input_itp_file_lines[name_line_index].strip().split(' ')[0]
                 candidate_restrained_residue_name = 'R' + current_residue_name[1:]
+                if candidate_restrained_residue_name in candidate_restrained_residue_names_used: #deal with POPC / DOPC style redundancy
+                    candidate_restrained_residue_name = 'Z' + candidate_restrained_residue_name[1:]
+                candidate_restrained_residue_names_used.append(candidate_restrained_residue_name)
                 if candidate_restrained_residue_name in residue_names_to_restrain or current_residue_name in residue_names_to_restrain:
                     #need to generate a special 'restrained' .itp file (will modify the list_input_itp_file_lines)
                     current_itp_filename = input_itp_filepath.split('/')[-1]
