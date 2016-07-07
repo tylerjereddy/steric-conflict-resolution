@@ -14,6 +14,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot
 import os
+assert int(MDAnalysis.__version__.split('.')[1]) > 14, "MDAnalysis version must be > 0.14."
 
 def cleanup_files(output_path):
     for filepath in glob.glob(output_path + '/*'):
