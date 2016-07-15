@@ -150,13 +150,23 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         if round_number == 1:
             original_residue_names = set(ordered_residue_names)
             dict_residue_name_mappings = {}
+            truncated_names_accounted_for = []
+            list_redundant_residues = []
             for original_residue_name in original_residue_names:
-                restrained_residue_name = 'R' + original_residue_name[1:]
+                if original_residue_name[1:] in truncated_names_accounted_for:
+                    restrained_residue_name = 'Z' + original_residue_name[1:]
+                    list_redundant_residues.append(original_residue_name)
+                else:
+                    restrained_residue_name = 'R' + original_residue_name[1:]
                 dict_residue_name_mappings[restrained_residue_name] = original_residue_name
+                truncated_names_accounted_for.append(original_residue_name[1:])
         else: #reset the residue names
             new_list_residue_names = []
             for residue_name in ordered_residue_names:
-                restrained_version = 'R' + residue_name[1:]
+                if residue_name in list_redundant_residues:
+                    restrained_version = 'Z' + residue_name[1:]
+                else:
+                    restrained_version = 'R' + residue_name[1:]
                 new_list_residue_names.append(dict_residue_name_mappings[restrained_version]) #map back unrestrained residue names
             ordered_residue_names = new_list_residue_names[:]
 
