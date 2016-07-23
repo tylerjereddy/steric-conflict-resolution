@@ -16,10 +16,10 @@ import matplotlib.pyplot
 import os
 assert int(MDAnalysis.__version__.split('.')[1]) > 14, "MDAnalysis version must be > 0.14."
 
-def generate_candidate_restrained_residue_name(current_residue_name, candidate_restrained_residue_names_used):
-    candidate_restrained_residue_name = 'R' + current_residue_name[1:]
-    if candidate_restrained_residue_name in candidate_restrained_residue_names_used: #deal with POPC / DOPC style redundancy
-        candidate_restrained_residue_name = 'Z' + candidate_restrained_residue_name[1:]
+def generate_candidate_restrained_residue_name(current_residue_name, candidate_restrained_residue_names_used, dict_residue_name_mappings):
+    for restrained_residue_name, unrestrained_residue_name in dict_residue_name_mappings.iteritems():
+        if current_residue_name == unrestrained_residue_name:
+            candidate_restrained_residue_name = restrained_residue_name
     return candidate_restrained_residue_name
 
 def generate_topology_data(topology_data_list, list_restrained_residue_names, output_universe, ordered_residue_names, dictionary_residues_to_restrain, dictionary_residues_not_restrained):
@@ -280,11 +280,8 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                 if residue_found == 0:
                     continue
                 current_residue_name = list_input_itp_file_lines[name_line_index].strip().split(' ')[0]
-                candidate_restrained_residue_name = generate_candidate_restrained_residue_name(current_residue_name, candidate_restrained_residue_names_used)
+                candidate_restrained_residue_name = generate_candidate_restrained_residue_name(current_residue_name, candidate_restrained_residue_names_used, dict_residue_name_mappings)
 
-                #for restrained_residue_name, unrestrained_residue_name in dict_residue_name_mappings.iteritems():
-                    #if current_residue_name == unrestrained_residue_name:
-                        #candidate_restrained_residue_name = restrained_residue_name
                 candidate_restrained_residue_names_used.append(candidate_restrained_residue_name)
                 if candidate_restrained_residue_name in residue_names_to_restrain or current_residue_name in residue_names_to_restrain:
                     #need to generate a special 'restrained' .itp file (will modify the list_input_itp_file_lines)

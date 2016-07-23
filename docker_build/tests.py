@@ -202,38 +202,38 @@ class TestTopologyDataRedundancyDownstream(unittest.TestCase):
         '''Test downstream handling of redundant restrained residue names for dictionary 1 -- related to Issue # 17. The dictionary associations for POPC and DOPC should always be respected.'''
         current_resname = 'POPC'
         candidate_restrained_residue_names_used = ['ROPC']
-        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used)
+        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used, dict_residue_name_mappings = self.dict_residue_name_mappings_1)
         self.assertEqual(self.dict_residue_name_mappings_1[candidate_restrained_residue_name], current_resname)
 
         candidate_restrained_residue_names_used = ['ZOPC']
-        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used)
+        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used, dict_residue_name_mappings = self.dict_residue_name_mappings_1)
         self.assertEqual(self.dict_residue_name_mappings_1[candidate_restrained_residue_name], current_resname)
 
         current_resname = 'DOPC'
         candidate_restrained_residue_names_used = ['ROPC']
-        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used)
+        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used, dict_residue_name_mappings = self.dict_residue_name_mappings_1)
         self.assertEqual(self.dict_residue_name_mappings_1[candidate_restrained_residue_name], current_resname)
 
         candidate_restrained_residue_names_used = ['ZOPC']
-        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used)
+        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used, dict_residue_name_mappings = self.dict_residue_name_mappings_1)
         self.assertEqual(self.dict_residue_name_mappings_1[candidate_restrained_residue_name], current_resname)
        
     def test_redundant_names_downstream_dict_2(self):
         '''Test downstream handling of redundant restrained residue names for dictionary 2 -- related to Issue # 17. The dictionary associations for POPC and DOPC should always be respected.'''
         current_resname = 'POPC'
         candidate_restrained_residue_names_used = ['ROPC']
-        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used)
+        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used, dict_residue_name_mappings = self.dict_residue_name_mappings_2)
         self.assertEqual(self.dict_residue_name_mappings_2[candidate_restrained_residue_name], current_resname)
 
         candidate_restrained_residue_names_used = ['ZOPC']
-        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used)
+        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used, dict_residue_name_mappings = self.dict_residue_name_mappings_2)
         self.assertEqual(self.dict_residue_name_mappings_2[candidate_restrained_residue_name], current_resname)
 
         current_resname = 'DOPC'
         candidate_restrained_residue_names_used = ['ROPC']
-        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used)
+        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used, dict_residue_name_mappings = self.dict_residue_name_mappings_2)
         self.assertEqual(self.dict_residue_name_mappings_2[candidate_restrained_residue_name], current_resname)
 
         candidate_restrained_residue_names_used = ['ZOPC']
-        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used)
+        candidate_restrained_residue_name = run_steric_resolution.generate_candidate_restrained_residue_name(current_residue_name = current_resname, candidate_restrained_residue_names_used = candidate_restrained_residue_names_used, dict_residue_name_mappings = self.dict_residue_name_mappings_2)
         self.assertEqual(self.dict_residue_name_mappings_2[candidate_restrained_residue_name], current_resname)
