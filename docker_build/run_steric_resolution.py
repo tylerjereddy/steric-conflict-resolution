@@ -44,7 +44,7 @@ def generate_topology_data(topology_data_list, list_restrained_residue_names, ou
             else:
                 output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
             topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name])))
-        return topology_data_list, output_universe
+    return topology_data_list, output_universe
 
 def cleanup_files(output_path):
     for filepath in glob.glob(output_path + '/*'):
