@@ -16,6 +16,42 @@ import matplotlib.pyplot
 import os
 assert int(MDAnalysis.__version__.split('.')[1]) > 14, "MDAnalysis version must be > 0.14."
 
+def generate_candidate_restrained_residue_name(current_residue_name, candidate_restrained_residue_names_used, dict_residue_name_mappings):
+    for restrained_residue_name, unrestrained_residue_name in dict_residue_name_mappings.iteritems():
+        if current_residue_name == unrestrained_residue_name:
+            candidate_restrained_residue_name = restrained_residue_name
+    return candidate_restrained_residue_name
+
+def generate_topology_data(topology_data_list, list_restrained_residue_names, output_universe, ordered_residue_names, dictionary_residues_to_restrain, dictionary_residues_not_restrained):
+    residue_names_accounted_for = []
+    for residue_name in ordered_residue_names:
+        if residue_name in residue_names_accounted_for:
+            continue
+        else: 
+            residue_names_accounted_for.append(residue_name)
+        if residue_name in dictionary_residues_to_restrain.keys():
+            new_restrained_residue_name = 'R' + residue_name[1:] #create a unique residue name for the restrained version of the residue (so that separate .itp may be used, etc.)
+            if new_restrained_residue_name in list_restrained_residue_names: #in special cases like DOPC and POPC
+                new_restrained_residue_name = 'Z' + new_restrained_residue_name[1:]
+            list_restrained_residue_names.append(new_restrained_residue_name)
+            list_restrained_residue_atomgroups = dictionary_residues_to_restrain[residue_name]
+            for ag in list_restrained_residue_atomgroups:
+                ag.set_resnames(new_restrained_residue_name)
+            if output_universe.select_atoms('all').n_atoms == 0:
+                output_universe = MDAnalysis.Merge(*list_restrained_residue_atomgroups)
+            else:
+                output_universe = MDAnalysis.Merge(output_universe.atoms, *list_restrained_residue_atomgroups)
+            output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
+            topology_data_list.append((new_restrained_residue_name, len(list_restrained_residue_atomgroups)))
+            topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name])))
+        else: #just merge in the unrestrained residues if there are no restrained targets for this residue type
+            if output_universe.select_atoms('all').n_atoms == 0:
+                output_universe = MDAnalysis.Merge(*dictionary_residues_not_restrained[residue_name])
+            else:
+                output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
+            topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name])))
+    return topology_data_list, output_universe
+
 def cleanup_files(output_path):
     for filepath in glob.glob(output_path + '/*'):
         if 'alchembed_round' in filepath and not 'gro' in filepath:
@@ -200,34 +236,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         topology_data_list = []
         list_restrained_residue_names = []
         output_universe = MDAnalysis.Universe()
-
-        residue_names_accounted_for = []
-        for residue_name in ordered_residue_names:
-            if residue_name in residue_names_accounted_for:
-                continue
-            else: 
-                residue_names_accounted_for.append(residue_name)
-            if residue_name in dictionary_residues_to_restrain.keys():
-                new_restrained_residue_name = 'R' + residue_name[1:] #create a unique residue name for the restrained version of the residue (so that separate .itp may be used, etc.)
-                if new_restrained_residue_name in list_restrained_residue_names: #in special cases like DOPC and POPC
-                    new_restrained_residue_name = 'Z' + new_restrained_residue_name[1:]
-                list_restrained_residue_names.append(new_restrained_residue_name)
-                list_restrained_residue_atomgroups = dictionary_residues_to_restrain[residue_name]
-                for ag in list_restrained_residue_atomgroups:
-                    ag.set_resnames(new_restrained_residue_name)
-                if output_universe.select_atoms('all').n_atoms == 0:
-                    output_universe = MDAnalysis.Merge(*list_restrained_residue_atomgroups)
-                else:
-                    output_universe = MDAnalysis.Merge(output_universe.atoms, *list_restrained_residue_atomgroups)
-                output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
-                topology_data_list.append((new_restrained_residue_name, len(list_restrained_residue_atomgroups)))
-                topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name])))
-            else: #just merge in the unrestrained residues if there are no restrained targets for this residue type
-                if output_universe.select_atoms('all').n_atoms == 0:
-                    output_universe = MDAnalysis.Merge(*dictionary_residues_not_restrained[residue_name])
-                else:
-                    output_universe = MDAnalysis.Merge(output_universe.atoms, *dictionary_residues_not_restrained[residue_name])
-                topology_data_list.append((residue_name, len(dictionary_residues_not_restrained[residue_name])))
+        topology_data_list, output_universe = generate_topology_data(topology_data_list, list_restrained_residue_names, output_universe, ordered_residue_names, dictionary_residues_to_restrain, dictionary_residues_not_restrained)
 
         # write the new input data to a coord file
         forcefield_parent_filepath = '/'.join(topology_filepath.split('/')[:-1]) + '/' # remove the .top file name to obtain the parent path for the input .itp files
@@ -271,9 +280,8 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
                 if residue_found == 0:
                     continue
                 current_residue_name = list_input_itp_file_lines[name_line_index].strip().split(' ')[0]
-                candidate_restrained_residue_name = 'R' + current_residue_name[1:]
-                if candidate_restrained_residue_name in candidate_restrained_residue_names_used: #deal with POPC / DOPC style redundancy
-                    candidate_restrained_residue_name = 'Z' + candidate_restrained_residue_name[1:]
+                candidate_restrained_residue_name = generate_candidate_restrained_residue_name(current_residue_name, candidate_restrained_residue_names_used, dict_residue_name_mappings)
+
                 candidate_restrained_residue_names_used.append(candidate_restrained_residue_name)
                 if candidate_restrained_residue_name in residue_names_to_restrain or current_residue_name in residue_names_to_restrain:
                     #need to generate a special 'restrained' .itp file (will modify the list_input_itp_file_lines)
