@@ -5,8 +5,9 @@ RUN apt-get update && apt-get install -y \
 	cmake
 
 #Download and build / install GROMACS:
-RUN wget ftp://ftp.gromacs.org/pub/gromacs/gromacs-5.1.2.tar.gz
-RUN tar xfz gromacs-5.1.2.tar.gz && cd gromacs-5.1.2 && mkdir build && cd build && cmake .. -DGMX_BUILD_OWN_FFTW=ON -DREGRESSIONTEST_DOWNLOAD=ON && make && make check && sudo make install && rm -r /gromacs-5.1.2 && rm /gromacs-5.1.2.tar.gz
+# need the release-2016 branch to handle lambda-growth mdrun of massive systems
+RUN wget https://github.com/gromacs/gromacs/archive/release-2016.zip
+RUN unzip release-2016.zip && cd gromacs-release-2016 && mkdir build && cd build && cmake .. -DGMX_BUILD_OWN_FFTW=ON -DREGRESSIONTEST_DOWNLOAD=ON && make && make check && sudo make install && rm -r /gromacs-5.1.2 && rm /gromacs-5.1.2.tar.gz
 RUN echo "source /usr/local/gromacs/bin/GMXRC" >> ~/.bashrc
 ADD *py /steric_conflict_resolution/
 ADD test_data /steric_conflict_resolution_work/test_data
