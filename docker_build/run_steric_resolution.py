@@ -236,9 +236,15 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         topology_data_list = []
         list_restrained_residue_names = []
         output_universe = MDAnalysis.Universe()
-        print 'ordered_residue_names:', ordered_residue_names
-        print 'dictionary_residues_to_restrain:', dictionary_residues_to_restrain
-        print 'dictionary_residues_not_restrained:', dictionary_residues_not_restrained
+
+        for key, value in dictionary_residues_to_restrain.iteritems():
+            print 'restrained key:', key
+            print 'len(value):', len(value)
+
+        for key, value in dictionary_residues_not_restrained.iteritems():
+            print 'unrestrained key:', key
+            print 'len(value):', len(value)
+
         topology_data_list, output_universe = generate_topology_data(topology_data_list, list_restrained_residue_names, output_universe, ordered_residue_names, dictionary_residues_to_restrain, dictionary_residues_not_restrained)
         print 'topology_data_list:', topology_data_list
 
