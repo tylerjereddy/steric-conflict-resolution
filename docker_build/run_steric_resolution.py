@@ -237,8 +237,6 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         topology_data_list = []
         list_restrained_residue_names = []
         output_universe = MDAnalysis.Universe()
-
-
         topology_data_list, output_universe = generate_topology_data(topology_data_list, list_restrained_residue_names, output_universe, ordered_residue_names, dictionary_residues_to_restrain, dictionary_residues_not_restrained)
 
         # write the new input data to a coord file
