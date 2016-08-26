@@ -177,6 +177,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
             u = MDAnalysis.Universe(tpr_filepath, input_coord_file)
         else:
             u = MDAnalysis.Universe(input_coord_file)
+        dimensions = u.dimensions
         all_selection = u.select_atoms('all')
         residues = all_selection.residues
         residues_to_restrain = residues[indices_residues_minimal_steric_conflicts] # will this work as intended?
@@ -243,7 +244,7 @@ def run_steric_resolution_loop(input_coord_file, index_list, residue_names_list,
         adjusted_coords = forcefield_parent_filepath + 'adjusted_coords.gro'
         output_universe.atoms.write(adjusted_coords)
         #adjust the box vectors (which get set to 0 for whatever reason)
-        subprocess.call(['/bin/bash','-i','-c','gmx editconf -f {coord_path} -o {coord_path} -box 300.0 300.0 300.0'.format(coord_path=adjusted_coords)])
+        subprocess.call(['/bin/bash','-i','-c','gmx editconf -f {coord_path} -o {coord_path} -box {dimensions_0} {dimensions_1} {dimensions_2} -noc'.format(coord_path=adjusted_coords, dimensions_0 = float(dimensions[0] / 10.), dimensions_1 = float(dimensions[1] /10.), dimensions_2 = float(dimensions[2] / 10.))])
         input_coord_file = adjusted_coords #use the new coord file as the algorithm input
 
         # up next, need to deal with writing new .top and .itp files in preparation for the selective application of position restraints
